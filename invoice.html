@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Radiance by Afsana — Invoice Generator</title>
+    <title>Radiance by Afsana â€” Invoice Generator</title>
     <style>
         /* ===== DESIGN TOKENS ===== */
         :root {
@@ -253,7 +253,7 @@
         }
 
         /* ========================================
-           INVOICE CONTAINER — exact A4
+           INVOICE CONTAINER â€” exact A4
            ======================================== */
         .invoice-container {
             flex: 0 0 210mm;
@@ -407,7 +407,7 @@
             line-height: 1.5;
         }
         .item-inclusions li { list-style: none; padding: 0; }
-        .item-inclusions li::before { content: "• "; color: var(--brand-accent); }
+        .item-inclusions li::before { content: "â€¢ "; color: var(--brand-accent); }
 
         /* ---- BOTTOM SECTION ---- */
         .bottom-section {
@@ -707,10 +707,10 @@
      ===================================================== -->
 <nav class="mobile-nav" id="mobileNav">
     <button type="button" class="tab-btn active" id="tabBtnEdit" onclick="switchTab('edit')">
-        ✏️ Edit Invoice
+        âœï¸ Edit Invoice
     </button>
     <button type="button" class="tab-btn" id="tabBtnPreview" onclick="switchTab('preview')">
-        👁️ Preview &amp; Download
+        ðŸ‘ï¸ Preview &amp; Download
     </button>
 </nav>
 
@@ -720,7 +720,7 @@
          CONTROL PANEL
          ===================================================== -->
     <div class="controls" id="controlsPanel">
-        <h2>🧾 Invoice Generator</h2>
+        <h2>ðŸ§¾ Invoice Generator</h2>
 
         <h3>Invoice Info</h3>
         <div class="input-row">
@@ -802,7 +802,7 @@
             </label>
         </div>
         <div class="input-group">
-            <label>Discount (BDT — fixed amount)</label>
+            <label>Discount (BDT â€” fixed amount)</label>
             <input type="number" id="discountAmt" value="0" oninput="updateInvoice()">
         </div>
 
@@ -822,7 +822,7 @@
         </div>
 
         <button type="button" class="btn btn-purple mobile-jump-btn" onclick="switchTab('preview')">
-            👁️ Preview &amp; Download Invoice →
+            ðŸ‘ï¸ Preview &amp; Download Invoice â†’
         </button>
 
         <hr class="panel-divider">
@@ -830,32 +830,32 @@
         <!-- Download Actions -->
         <div class="dl-group">
             <div style="font-size:0.88rem; font-weight:700; color:var(--brand-dark); margin-bottom:2px;">
-                📥 Download Invoice Image
+                ðŸ“¥ Download Invoice Image
             </div>
 
             <div class="dl-row">
                 <button class="btn btn-purple" id="dlPngBtn"
                         onclick="downloadSingle('png')" style="margin-top:0;">
-                    🖼️ PNG (current state)
+                    ðŸ–¼ï¸ PNG (current state)
                 </button>
                 <button class="btn" onclick="downloadSingle('jpg')"
                         style="margin-top:0; background:#33155a;">
-                    📷 JPG (current state)
+                    ðŸ“· JPG (current state)
                 </button>
             </div>
 
             <button class="btn btn-green" id="dlBothBtn" onclick="downloadBothVersions()">
-                ⬇️ Download BOTH — Pending &amp; Paid
+                â¬‡ï¸ Download BOTH â€” Pending &amp; Paid
             </button>
 
             <button class="btn btn-secondary" onclick="window.print()">
-                🖨️ Print / Save as PDF
+                ðŸ–¨ï¸ Print / Save as PDF
             </button>
         </div>
 
         <hr class="panel-divider">
 
-        <h3>💾 Save &amp; Sync</h3>
+        <h3>ðŸ’¾ Save &amp; Sync</h3>
         <div class="input-group">
             <label class="check-label">
                 <input type="checkbox" id="saveToSheets" checked style="width:auto;">
@@ -874,7 +874,7 @@
                 Send Invoice via Email
             </label>
         </div>
-        <button class="btn" onclick="saveInvoice()" style="background:#27ae60;">💾 Save Invoice &amp; Sync</button>
+        <button class="btn" onclick="saveInvoice()" style="background:#27ae60;">ðŸ’¾ Save Invoice &amp; Sync</button>
         <div id="statusMessage"></div>
     </div>
 
@@ -884,7 +884,7 @@
     <div class="preview-column" id="previewColumn">
 
         <div class="preview-toolbar">
-            <span class="preview-title">👁️ A4 Invoice Preview</span>
+            <span class="preview-title">ðŸ‘ï¸ A4 Invoice Preview</span>
             <div class="zoom-controls">
                 <button type="button" class="zoom-btn active" id="btnFit" onclick="setPreviewZoom('fit')">Fit Screen</button>
                 <button type="button" class="zoom-btn" id="btn100" onclick="setPreviewZoom('100')">100%</button>
@@ -894,14 +894,14 @@
         <!-- Quick actions visible on mobile in Preview tab -->
         <div class="preview-actions-bar">
             <button class="btn btn-green" onclick="downloadBothVersions()" style="margin-top:0;">
-                ⬇️ Download BOTH (Pending &amp; Paid)
+                â¬‡ï¸ Download BOTH (Pending &amp; Paid)
             </button>
             <div class="dl-row" style="margin-top:6px;">
-                <button class="btn btn-purple" onclick="downloadSingle('png')">🖼️ PNG</button>
-                <button class="btn" onclick="downloadSingle('jpg')" style="background:#33155a;">📷 JPG</button>
+                <button class="btn btn-purple" onclick="downloadSingle('png')">ðŸ–¼ï¸ PNG</button>
+                <button class="btn" onclick="downloadSingle('jpg')" style="background:#33155a;">ðŸ“· JPG</button>
             </div>
             <button class="btn btn-secondary" onclick="switchTab('edit')">
-                ✏️ Back to Edit Form
+                âœï¸ Back to Edit Form
             </button>
         </div>
 
@@ -912,8 +912,8 @@
                     <!-- HEADER -->
                     <header class="inv-header">
                         <div class="brand">
-                            <img src="data:image/png;base64,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"
-                                 alt="Radiance By Afsana Logo" class="brand-logo">
+                            <img src="data:image/png;base64,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"
+                                 alt="Radiance By Afsana Logo" class="brand-logo" onerror="this.onerror=null;this.src='logo.png';">
                             <div>
                                 <div class="brand-name">Radiance By Afsana</div>
                                 <div class="brand-tagline">Bridal Makeup | Ads | Editorials</div>
@@ -927,8 +927,8 @@
                     <!-- META BAR -->
                     <div class="meta-bar">
                         <span>INVOICE NO. &nbsp;<strong id="d-invNum">RA-2026-001</strong></span>
-                        <span id="d-stamp"><span class="status-stamp stamp-pending">▲ Advance Pending</span></span>
-                        <span>DATE &nbsp;<strong id="d-invDate">—</strong></span>
+                        <span id="d-stamp"><span class="status-stamp stamp-pending">â–² Advance Pending</span></span>
+                        <span>DATE &nbsp;<strong id="d-invDate">â€”</strong></span>
                     </div>
 
                     <!-- BILLED TO / EVENT DETAILS -->
@@ -985,7 +985,7 @@
                             </div>
                             <div class="total-row" id="r-discount" style="display:none;">
                                 <span class="lbl" id="d-discountLabel">Discount</span>
-                                <span class="val" id="d-discount" style="color:#c0392b;">– BDT 0</span>
+                                <span class="val" id="d-discount" style="color:#c0392b;">â€“ BDT 0</span>
                             </div>
                             <div class="total-row" id="r-transport" style="display:none;">
                                 <span class="lbl">Transportation</span>
@@ -1033,7 +1033,7 @@
 
                     <!-- THANK YOU + SIGNATURE + SEAL -->
                     <div class="thankyou-row">
-                        <div class="thankyou-text">Thank you for choosing Radiance by Afsana ✦</div>
+                        <div class="thankyou-text">Thank you for choosing Radiance by Afsana âœ¦</div>
 
                         <div class="sig-area">
                             <!-- Circular official seal (SVG inline) -->
@@ -1059,7 +1059,7 @@
                                     </text>
 
                                     <text x="60" y="51" text-anchor="middle"
-                                          font-family="Georgia, serif" font-size="7.5" fill="#9b7fd4" letter-spacing="5">✦ ✦ ✦</text>
+                                          font-family="Georgia, serif" font-size="7.5" fill="#9b7fd4" letter-spacing="5">âœ¦ âœ¦ âœ¦</text>
 
                                     <text x="60" y="67" text-anchor="middle"
                                           font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
@@ -1111,7 +1111,7 @@
      JAVASCRIPT
      ===================================================== -->
 <script>
-    // ── MOBILE TAB SWITCHING & ZOOM ───────────────────────
+    // â”€â”€ MOBILE TAB SWITCHING & ZOOM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let currentMobileTab = 'edit';
     let currentZoomMode  = 'fit';
 
@@ -1195,13 +1195,13 @@
         setTimeout(updatePreviewScale, 180);
     });
 
-    // ── FORMAT HELPERS ───────────────────────────────────
+    // â”€â”€ FORMAT HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function fmt(n) {
         return 'BDT ' + n.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
     function show(el, visible) { el.style.display = visible ? '' : 'none'; }
 
-    // ── SERVICE DATA ─────────────────────────────────────
+    // â”€â”€ SERVICE DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let services = [
         { name: 'Holud Package', inclusions: '', price: 13000, qty: 1 },
         { name: 'Reception Package', inclusions: '', price: 16000, qty: 1 }
@@ -1217,9 +1217,9 @@
                 <div class="row">
                     <input type="text" placeholder="Package / Service Name" value="${svc.name}"
                            oninput="services[${i}].name=this.value; updateInvoice()">
-                    <button class="del-btn" onclick="removeService(${i})">✕</button>
+                    <button class="del-btn" onclick="removeService(${i})">âœ•</button>
                 </div>
-                <textarea placeholder="Inclusions (one per line → bullet list on invoice)"
+                <textarea placeholder="Inclusions (one per line â†’ bullet list on invoice)"
                           oninput="services[${i}].inclusions=this.value; updateInvoice()">${svc.inclusions}</textarea>
                 <div class="row" style="margin-top:6px;">
                     <input type="number" placeholder="Unit Price" value="${svc.price}"
@@ -1238,7 +1238,7 @@
         services.splice(i, 1); renderServiceInputs(); updateInvoice();
     }
 
-    // ── MAIN UPDATE ──────────────────────────────────────
+    // â”€â”€ MAIN UPDATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function updateInvoice() {
         const invNum = document.getElementById('invNum').value.trim() || 'RA-2026-001';
         document.getElementById('d-invNum').textContent = invNum;
@@ -1252,15 +1252,15 @@
             document.getElementById('d-invDate').textContent =
                 days[d.getDay()] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
         } else {
-            document.getElementById('d-invDate').textContent = '—';
+            document.getElementById('d-invDate').textContent = 'â€”';
         }
 
         // Stamp
         const stampEl = document.getElementById('d-stamp');
         if (document.getElementById('advanceStatus').value === 'paid') {
-            stampEl.innerHTML = '<span class="status-stamp stamp-received">✔ Advance Received</span>';
+            stampEl.innerHTML = '<span class="status-stamp stamp-received">âœ” Advance Received</span>';
         } else {
-            stampEl.innerHTML = '<span class="status-stamp stamp-pending">▲ Advance Pending</span>';
+            stampEl.innerHTML = '<span class="status-stamp stamp-pending">â–² Advance Pending</span>';
         }
 
         // Client
@@ -1268,7 +1268,7 @@
         const clientPhone   = document.getElementById('clientPhone').value.trim();
         const clientEmail   = document.getElementById('clientEmail').value.trim();
         const clientAddress = document.getElementById('clientAddress').value.trim();
-        document.getElementById('d-clientName').textContent = clientName || '—';
+        document.getElementById('d-clientName').textContent = clientName || 'â€”';
         setOptRow('r-clientPhone',   'd-clientPhone',   clientPhone);
         setOptRow('r-clientEmail',   'd-clientEmail',   clientEmail);
         setOptRow('r-clientAddress', 'd-clientAddress', clientAddress);
@@ -1296,7 +1296,7 @@
                 : '';
             tbody.innerHTML += `
                 <tr>
-                    <td><span class="item-name">${svc.name || '—'}</span>${incHtml}</td>
+                    <td><span class="item-name">${svc.name || 'â€”'}</span>${incHtml}</td>
                     <td>${svc.qty || 1}</td>
                     <td>${fmt(svc.price || 0)}</td>
                     <td>${fmt(lineTotal)}</td>
@@ -1321,7 +1321,7 @@
         show(document.getElementById('r-discount'),    discountApplied);
         if (discountApplied) {
             document.getElementById('d-subtotal').textContent = fmt(subtotal);
-            document.getElementById('d-discount').textContent = '– ' + fmt(discountFixed);
+            document.getElementById('d-discount').textContent = 'â€“ ' + fmt(discountFixed);
         }
         show(document.getElementById('r-transport'),   transportApplied);
         if (transportApplied) document.getElementById('d-transport').textContent = fmt(transportAmt);
@@ -1347,7 +1347,7 @@
         else        { row.style.display = 'none'; }
     }
 
-    // ── INIT ─────────────────────────────────────────────
+    // â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     (function init() {
         const today = new Date();
         const pad   = n => String(n).padStart(2,'0');
@@ -1394,7 +1394,7 @@
     async function downloadSingle(format) {
         const btn = document.getElementById('dlPngBtn');
         const orig = btn ? btn.innerHTML : '';
-        if (btn) { btn.innerHTML = '⏳ Rendering…'; btn.disabled = true; }
+        if (btn) { btn.innerHTML = 'â³ Renderingâ€¦'; btn.disabled = true; }
 
         try {
             const invNum     = document.getElementById('invNum').value || 'RA';
@@ -1425,7 +1425,7 @@
     async function downloadBothVersions() {
         const btn  = document.getElementById('dlBothBtn');
         const orig = btn ? btn.innerHTML : '';
-        if (btn) { btn.innerHTML = '⏳ Rendering both…'; btn.disabled = true; }
+        if (btn) { btn.innerHTML = 'â³ Rendering bothâ€¦'; btn.disabled = true; }
 
         const statusEl  = document.getElementById('advanceStatus');
         const savedVal  = statusEl.value;
@@ -1459,7 +1459,7 @@
         }
     }
 
-    // ── BACKEND INTEGRATION ──────────────────────────────
+    // â”€â”€ BACKEND INTEGRATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const API_URL = 'http://localhost:3000/api';
 
     function showStatus(msg, isErr=false) {
@@ -1474,11 +1474,11 @@
 
     async function saveInvoice() {
         const clientName = document.getElementById('clientName').value;
-        if (!clientName) { showStatus('❌ Please enter client name', true); return; }
+        if (!clientName) { showStatus('âŒ Please enter client name', true); return; }
         const sendEmail   = document.getElementById('sendEmail').checked;
         const clientEmail = document.getElementById('clientEmail').value;
-        if (sendEmail && !clientEmail) { showStatus('❌ Please enter client email to send invoice', true); return; }
-        showStatus('⏳ Saving invoice…');
+        if (sendEmail && !clientEmail) { showStatus('âŒ Please enter client email to send invoice', true); return; }
+        showStatus('â³ Saving invoiceâ€¦');
         try {
             const r = await fetch(`${API_URL}/invoice/save-all`, {
                 method: 'POST',
@@ -1501,13 +1501,13 @@
             });
             const result = await r.json();
             if (result.success) {
-                let msg = '✅ Saved!<br>';
-                if (result.results?.sheets?.success)   msg += '📊 Google Sheets<br>';
-                if (result.results?.calendar?.success) msg += '📅 Calendar event<br>';
-                if (result.results?.email?.success)    msg += '📧 Email sent<br>';
+                let msg = 'âœ… Saved!<br>';
+                if (result.results?.sheets?.success)   msg += 'ðŸ“Š Google Sheets<br>';
+                if (result.results?.calendar?.success) msg += 'ðŸ“… Calendar event<br>';
+                if (result.results?.email?.success)    msg += 'ðŸ“§ Email sent<br>';
                 showStatus(msg);
-            } else { showStatus(`❌ ${result.message}`, true); }
-        } catch (e) { showStatus(`❌ Cannot connect to server at ${API_URL}`, true); }
+            } else { showStatus(`âŒ ${result.message}`, true); }
+        } catch (e) { showStatus(`âŒ Cannot connect to server at ${API_URL}`, true); }
     }
 </script>
 </body>
