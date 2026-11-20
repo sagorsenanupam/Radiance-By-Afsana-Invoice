@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Radiance by Afsana — Invoice Generator</title>
     <style>
         /* ===== DESIGN TOKENS ===== */
@@ -19,12 +20,63 @@
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             background: #eef1f5;
-            padding: 30px;
+            padding: 24px 20px 40px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* ===== MOBILE TAB NAVIGATION ===== */
+        .mobile-nav {
+            display: none;
+            width: 100%;
+            max-width: 580px;
+            background: white;
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            margin-bottom: 16px;
+            gap: 6px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .tab-btn.active {
+            background: var(--brand-dark);
+            color: white;
+            box-shadow: 0 2px 8px rgba(26,10,46,0.25);
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .app-layout {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            gap: 30px;
-            color: var(--text-main);
+            gap: 28px;
+            width: 100%;
+            max-width: 1400px;
         }
 
         /* ========================================
@@ -33,27 +85,30 @@
         .controls {
             flex: 0 0 410px;
             width: 410px;
+            max-width: 100%;
             background: white;
             padding: 24px;
-            border-radius: 10px;
+            border-radius: 12px;
             box-shadow: 0 2px 14px rgba(0,0,0,.09);
             height: fit-content;
         }
         .controls h2 { color: var(--brand-dark); margin-bottom: 16px; font-size: 1.15rem; }
-        .controls h3 { color: var(--brand-mid); margin: 20px 0 10px; font-size: 1rem; text-transform: uppercase; letter-spacing: .5px; }
+        .controls h3 { color: var(--brand-mid); margin: 20px 0 10px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: .5px; }
 
         .input-group { margin-bottom: 12px; }
-        .input-group label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; color: var(--brand-dark); }
+        .input-group label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 5px; color: var(--brand-dark); }
         .input-group input,
         .input-group select,
         .input-group textarea {
             width: 100%;
-            padding: 8px 11px;
+            padding: 9px 11px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 0.92rem;
+            background: #fff;
+            color: var(--text-main);
         }
-        .input-group textarea { resize: vertical; min-height: 60px; }
+        .input-group textarea { resize: vertical; min-height: 60px; font-family: inherit; }
 
         .input-row { display: flex; gap: 8px; }
         .input-row .input-group { flex: 1; }
@@ -61,52 +116,141 @@
         .check-label {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             cursor: pointer;
             font-size: 0.92rem;
             font-weight: 600;
             color: var(--brand-dark);
+            padding: 8px 10px;
+            background: #faf8fd;
+            border-radius: 6px;
+            border: 1px solid #ede8f5;
+            user-select: none;
         }
-        .check-label input[type="checkbox"] { width: auto; }
+        .check-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--brand-dark); }
 
         .btn {
             background: var(--brand-dark);
             color: white;
             border: none;
-            padding: 11px 18px;
+            padding: 12px 18px;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 6px;
             width: 100%;
             font-size: 0.95rem;
             font-weight: 600;
             margin-top: 8px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: background 0.2s ease, transform 0.1s ease;
         }
+        .btn:active { transform: scale(0.98); }
         .btn:hover { background: var(--brand-mid); }
         .btn-green  { background: #27ae60; }
         .btn-green:hover  { background: #1e8449; }
         .btn-purple { background: #6c3fc5; }
         .btn-purple:hover { background: #5533a1; }
+        .btn-secondary { background: #5a5568; }
+        .btn-secondary:hover { background: #454052; }
 
         .svc-card {
-            border: 1px dashed #bbb;
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #fafafa;
+            border: 1px dashed #b8b1c7;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #faf9fd;
         }
         .svc-card .row { display: flex; gap: 6px; margin-bottom: 6px; }
-        .svc-card input { flex: 1; padding: 7px 9px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.88rem; }
-        .svc-card input.small { flex: 0 0 72px; }
-        .svc-card textarea { width: 100%; padding: 7px 9px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; resize: vertical; min-height: 48px; }
-        .svc-card .del-btn { background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 0.85rem; }
+        .svc-card input { flex: 1; padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.88rem; background: #fff; }
+        .svc-card input.small { flex: 0 0 75px; }
+        .svc-card textarea { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem; resize: vertical; min-height: 48px; font-family: inherit; background: #fff; }
+        .svc-card .del-btn { background: #e74c3c; color: white; border: none; border-radius: 5px; padding: 6px 12px; cursor: pointer; font-size: 0.9rem; font-weight: bold; min-width: 40px; }
 
-        #statusMessage { margin-top: 12px; padding: 10px; border-radius: 5px; display: none; font-size: 0.9rem; }
+        #statusMessage { margin-top: 12px; padding: 12px; border-radius: 6px; display: none; font-size: 0.9rem; line-height: 1.4; }
         .panel-divider { border: none; border-top: 2px solid var(--border-light); margin: 20px 0; }
 
         /* download button group */
         .dl-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
         .dl-row    { display: flex; gap: 8px; }
         .dl-row .btn { flex: 1; margin-top: 0; }
+
+        /* mobile jump button */
+        .mobile-jump-btn { display: none; margin-top: 18px; }
+
+        /* ========================================
+           PREVIEW COLUMN & RESPONSIVE SCALER
+           ======================================== */
+        .preview-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 210mm;
+            max-width: 100%;
+        }
+
+        .preview-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 0 2px;
+        }
+        .preview-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .zoom-controls {
+            display: inline-flex;
+            background: #ded7eb;
+            padding: 3px;
+            border-radius: 8px;
+            gap: 3px;
+        }
+        .zoom-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--brand-dark);
+            transition: all 0.2s ease;
+        }
+        .zoom-btn.active {
+            background: white;
+            color: var(--brand-dark);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+
+        .preview-actions-bar {
+            display: none; /* Shown on mobile preview tab */
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .preview-actions-bar .btn { margin-top: 6px; }
+
+        .preview-stage {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            transition: height 0.2s ease;
+        }
+        .invoice-scaler {
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
 
         /* ========================================
            INVOICE CONTAINER — exact A4
@@ -127,7 +271,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            /* ✅ FIX 1 — base font raised from 11.5 → 13px */
             font-size: 13px;
             line-height: 1.45;
             color: var(--text-main);
@@ -384,13 +527,11 @@
             align-self: flex-end;
             padding-bottom: 2px;
         }
-        /* Seal + signature side by side */
         .sig-area {
             display: flex;
             align-items: flex-end;
             gap: 10px;
         }
-        /* ✅ FIX 4+5 — circular SVG seal */
         .seal-wrap {
             width: 80px;
             height: 80px;
@@ -428,15 +569,126 @@
         .footer-icon { width: 14px; height: 14px; fill: var(--brand-accent); flex-shrink: 0; }
 
         /* ========================================
-           PRINT
+           RESPONSIVE MEDIA QUERIES (Mobile / Tablet)
+           ======================================== */
+        @media (max-width: 1024px) {
+            body {
+                padding: 12px 10px 40px;
+            }
+
+            .mobile-nav {
+                display: flex;
+            }
+
+            .app-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+
+            /* View switching controlled via JS state */
+            .view-mode-edit .preview-column {
+                display: none !important;
+            }
+            .view-mode-edit .controls {
+                display: block !important;
+                width: 100%;
+                max-width: 580px;
+            }
+
+            .view-mode-preview .controls {
+                display: none !important;
+            }
+            .view-mode-preview .preview-column {
+                display: flex !important;
+                width: 100%;
+                max-width: 600px;
+            }
+            .view-mode-preview .preview-actions-bar {
+                display: block;
+            }
+
+            .mobile-jump-btn {
+                display: block;
+            }
+
+            .controls {
+                width: 100%;
+                padding: 20px 16px;
+            }
+
+            .preview-column {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            /* Touch-friendly inputs: prevent iOS auto-zoom with 16px base */
+            .input-group input,
+            .input-group select,
+            .input-group textarea,
+            .svc-card input,
+            .svc-card textarea {
+                font-size: 16px;
+                padding: 10px 12px;
+            }
+
+            .input-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .svc-card .row {
+                flex-wrap: wrap;
+            }
+            .svc-card input.small {
+                flex: 1;
+                min-width: 70px;
+            }
+
+            .dl-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        /* ========================================
+           PRINT SETTINGS
            ======================================== */
         @media print {
-            body { background: white !important; margin: 0 !important; padding: 0 !important; display: block !important; }
-            .controls { display: none !important; }
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+            .mobile-nav,
+            .controls,
+            .preview-toolbar,
+            .preview-actions-bar {
+                display: none !important;
+            }
+            .app-layout,
+            .preview-column,
+            .preview-stage,
+            .invoice-scaler {
+                display: block !important;
+                transform: none !important;
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                width: auto !important;
+            }
             .invoice-container {
                 box-shadow: none !important;
-                width: 210mm !important; min-width: 210mm !important; max-width: 210mm !important;
-                height: 297mm !important; min-height: 297mm !important; max-height: 297mm !important;
+                width: 210mm !important;
+                min-width: 210mm !important;
+                max-width: 210mm !important;
+                height: 297mm !important;
+                min-height: 297mm !important;
+                max-height: 297mm !important;
                 padding: 28px 34px 20px !important;
                 margin: 0 auto !important;
             }
@@ -448,394 +700,501 @@
     <script src="html2canvas.min.js"></script>
 </head>
 
-<body>
+<body class="view-mode-edit">
 
 <!-- =====================================================
-     CONTROL PANEL
+     MOBILE TOP NAVIGATION (Tabs on phone & tablet)
      ===================================================== -->
-<div class="controls">
-    <h2>🧾 Invoice Generator</h2>
+<nav class="mobile-nav" id="mobileNav">
+    <button type="button" class="tab-btn active" id="tabBtnEdit" onclick="switchTab('edit')">
+        ✏️ Edit Invoice
+    </button>
+    <button type="button" class="tab-btn" id="tabBtnPreview" onclick="switchTab('preview')">
+        👁️ Preview &amp; Download
+    </button>
+</nav>
 
-    <h3>Invoice Info</h3>
-    <div class="input-row">
-        <div class="input-group">
-            <label>Invoice Number</label>
-            <input type="text" id="invNum" placeholder="RA-2026-001" oninput="updateInvoice()">
-        </div>
-        <div class="input-group">
-            <label>Issue Date</label>
-            <input type="date" id="invDate" oninput="updateInvoice()">
-        </div>
-    </div>
+<div class="app-layout">
 
-    <h3>Client Details</h3>
-    <div class="input-group">
-        <label>Client Name *</label>
-        <input type="text" id="clientName" placeholder="e.g., Nusrat Jahan" oninput="updateInvoice()">
-    </div>
-    <div class="input-row">
-        <div class="input-group">
-            <label>Client Phone</label>
-            <input type="text" id="clientPhone" placeholder="+8801XXXXXXXXX" oninput="updateInvoice()">
-        </div>
-        <div class="input-group">
-            <label>Client Email</label>
-            <input type="email" id="clientEmail" placeholder="client@email.com" oninput="updateInvoice()">
-        </div>
-    </div>
-    <div class="input-group">
-        <label>Client Address</label>
-        <input type="text" id="clientAddress" placeholder="e.g., Dhanmondi, Dhaka" oninput="updateInvoice()">
-    </div>
+    <!-- =====================================================
+         CONTROL PANEL
+         ===================================================== -->
+    <div class="controls" id="controlsPanel">
+        <h2>🧾 Invoice Generator</h2>
 
-    <h3>Event Details</h3>
-    <div class="input-group">
-        <label>Event Date(s)</label>
-        <input type="text" id="eventDate" placeholder="e.g., Friday, 22 January 2027" oninput="updateInvoice()">
-    </div>
-    <div class="input-row">
-        <div class="input-group">
-            <label>Slot Time</label>
-            <input type="text" id="slotTime" placeholder="e.g., 10:00 AM (Morning)" oninput="updateInvoice()">
+        <h3>Invoice Info</h3>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Invoice Number</label>
+                <input type="text" id="invNum" placeholder="RA-2026-001" oninput="updateInvoice()">
+            </div>
+            <div class="input-group">
+                <label>Issue Date</label>
+                <input type="date" id="invDate" oninput="updateInvoice()">
+            </div>
         </div>
+
+        <h3>Client Details</h3>
         <div class="input-group">
-            <label>Venue / Area</label>
-            <input type="text" id="eventVenue" placeholder="e.g., Dhaka Club" oninput="updateInvoice()">
+            <label>Client Name *</label>
+            <input type="text" id="clientName" placeholder="e.g., Nusrat Jahan" oninput="updateInvoice()">
         </div>
-    </div>
-
-    <h3>Services</h3>
-    <div id="services-list"></div>
-    <button class="btn" onclick="addServiceRow()" style="background:var(--brand-mid);">+ Add Service Item</button>
-
-    <h3>Charges &amp; Adjustments</h3>
-    <div class="input-group">
-        <label class="check-label">
-            <input type="checkbox" id="transportApplied" onchange="updateInvoice()">
-            Apply Transportation Charge
-        </label>
-    </div>
-    <div class="input-group">
-        <label>Transportation Charge (BDT)</label>
-        <input type="number" id="transCharge" value="2500" oninput="updateInvoice()">
-    </div>
-    <div class="input-group">
-        <label class="check-label">
-            <input type="checkbox" id="homeServiceApplied" onchange="updateInvoice()">
-            Apply Home Service Charge
-        </label>
-    </div>
-    <div class="input-group">
-        <label>Home Service Charge (%)</label>
-        <input type="number" id="homeServicePct" value="15" oninput="updateInvoice()">
-    </div>
-    <div class="input-group">
-        <label class="check-label">
-            <input type="checkbox" id="discountApplied" onchange="updateInvoice()">
-            Apply Discount
-        </label>
-    </div>
-    <div class="input-group">
-        <label>Discount (BDT — fixed amount)</label>
-        <input type="number" id="discountAmt" value="0" oninput="updateInvoice()">
-    </div>
-
-    <h3>Advance</h3>
-    <div class="input-row">
-        <div class="input-group">
-            <label>Advance (%)</label>
-            <input type="number" id="advancePct" value="20" oninput="updateInvoice()">
+        <div class="input-row">
+            <div class="input-group">
+                <label>Client Phone</label>
+                <input type="text" id="clientPhone" placeholder="+8801XXXXXXXXX" oninput="updateInvoice()">
+            </div>
+            <div class="input-group">
+                <label>Client Email</label>
+                <input type="email" id="clientEmail" placeholder="client@email.com" oninput="updateInvoice()">
+            </div>
         </div>
         <div class="input-group">
-            <label>Current Advance Status</label>
-            <select id="advanceStatus" onchange="updateInvoice()">
-                <option value="unpaid">Unpaid / Pending</option>
-                <option value="paid">Paid</option>
-            </select>
-        </div>
-    </div>
-
-    <hr class="panel-divider">
-
-    <!-- ✅ FIX 2+3 — PNG/JPG download; dual-version download -->
-    <div class="dl-group">
-        <div style="font-size:0.88rem; font-weight:600; color:var(--brand-dark); margin-bottom:2px;">
-            📥 Download Invoice Image
+            <label>Client Address</label>
+            <input type="text" id="clientAddress" placeholder="e.g., Dhanmondi, Dhaka" oninput="updateInvoice()">
         </div>
 
-        <!-- Single downloads -->
-        <div class="dl-row">
-            <button class="btn btn-purple" id="dlPngBtn"
-                    onclick="downloadSingle('png')" style="margin-top:0;">
-                🖼️ PNG (current state)
-            </button>
-            <button class="btn" onclick="downloadSingle('jpg')"
-                    style="margin-top:0; background:#33155a;">
-                📷 JPG (current state)
-            </button>
+        <h3>Event Details</h3>
+        <div class="input-group">
+            <label>Event Date(s)</label>
+            <input type="text" id="eventDate" placeholder="e.g., Friday, 22 January 2027" oninput="updateInvoice()">
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Slot Time</label>
+                <input type="text" id="slotTime" placeholder="e.g., 10:00 AM (Morning)" oninput="updateInvoice()">
+            </div>
+            <div class="input-group">
+                <label>Venue / Area</label>
+                <input type="text" id="eventVenue" placeholder="e.g., Dhaka Club" oninput="updateInvoice()">
+            </div>
         </div>
 
-        <!-- Dual download — both stamps in one click -->
-        <button class="btn btn-green" id="dlBothBtn" onclick="downloadBothVersions()">
-            ⬇️ Download BOTH — Pending &amp; Paid versions
+        <h3>Services</h3>
+        <div id="services-list"></div>
+        <button class="btn" onclick="addServiceRow()" style="background:var(--brand-mid);">+ Add Service Item</button>
+
+        <h3>Charges &amp; Adjustments</h3>
+        <div class="input-group">
+            <label class="check-label">
+                <input type="checkbox" id="transportApplied" onchange="updateInvoice()">
+                Apply Transportation Charge
+            </label>
+        </div>
+        <div class="input-group">
+            <label>Transportation Charge (BDT)</label>
+            <input type="number" id="transCharge" value="2500" oninput="updateInvoice()">
+        </div>
+        <div class="input-group">
+            <label class="check-label">
+                <input type="checkbox" id="homeServiceApplied" onchange="updateInvoice()">
+                Apply Home Service Charge
+            </label>
+        </div>
+        <div class="input-group">
+            <label>Home Service Charge (%)</label>
+            <input type="number" id="homeServicePct" value="15" oninput="updateInvoice()">
+        </div>
+        <div class="input-group">
+            <label class="check-label">
+                <input type="checkbox" id="discountApplied" onchange="updateInvoice()">
+                Apply Discount
+            </label>
+        </div>
+        <div class="input-group">
+            <label>Discount (BDT — fixed amount)</label>
+            <input type="number" id="discountAmt" value="0" oninput="updateInvoice()">
+        </div>
+
+        <h3>Advance</h3>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Advance (%)</label>
+                <input type="number" id="advancePct" value="20" oninput="updateInvoice()">
+            </div>
+            <div class="input-group">
+                <label>Current Advance Status</label>
+                <select id="advanceStatus" onchange="updateInvoice()">
+                    <option value="unpaid">Unpaid / Pending</option>
+                    <option value="paid">Paid</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-purple mobile-jump-btn" onclick="switchTab('preview')">
+            👁️ Preview &amp; Download Invoice →
         </button>
 
-        <button class="btn" onclick="window.print()" style="background:#555;">
-            🖨️ Print / Save as PDF
-        </button>
+        <hr class="panel-divider">
+
+        <!-- Download Actions -->
+        <div class="dl-group">
+            <div style="font-size:0.88rem; font-weight:700; color:var(--brand-dark); margin-bottom:2px;">
+                📥 Download Invoice Image
+            </div>
+
+            <div class="dl-row">
+                <button class="btn btn-purple" id="dlPngBtn"
+                        onclick="downloadSingle('png')" style="margin-top:0;">
+                    🖼️ PNG (current state)
+                </button>
+                <button class="btn" onclick="downloadSingle('jpg')"
+                        style="margin-top:0; background:#33155a;">
+                    📷 JPG (current state)
+                </button>
+            </div>
+
+            <button class="btn btn-green" id="dlBothBtn" onclick="downloadBothVersions()">
+                ⬇️ Download BOTH — Pending &amp; Paid
+            </button>
+
+            <button class="btn btn-secondary" onclick="window.print()">
+                🖨️ Print / Save as PDF
+            </button>
+        </div>
+
+        <hr class="panel-divider">
+
+        <h3>💾 Save &amp; Sync</h3>
+        <div class="input-group">
+            <label class="check-label">
+                <input type="checkbox" id="saveToSheets" checked style="width:auto;">
+                Save to Google Sheets
+            </label>
+        </div>
+        <div class="input-group">
+            <label class="check-label">
+                <input type="checkbox" id="createCalendarEvent" checked style="width:auto;">
+                Create Calendar Event
+            </label>
+        </div>
+        <div class="input-group">
+            <label class="check-label">
+                <input type="checkbox" id="sendEmail" style="width:auto;">
+                Send Invoice via Email
+            </label>
+        </div>
+        <button class="btn" onclick="saveInvoice()" style="background:#27ae60;">💾 Save Invoice &amp; Sync</button>
+        <div id="statusMessage"></div>
     </div>
 
-    <hr class="panel-divider">
+    <!-- =====================================================
+         PREVIEW COLUMN (A4 Display with responsive scaling)
+         ===================================================== -->
+    <div class="preview-column" id="previewColumn">
 
-    <h3>💾 Save &amp; Sync</h3>
-    <div class="input-group">
-        <label class="check-label">
-            <input type="checkbox" id="saveToSheets" checked style="width:auto;">
-            Save to Google Sheets
-        </label>
-    </div>
-    <div class="input-group">
-        <label class="check-label">
-            <input type="checkbox" id="createCalendarEvent" checked style="width:auto;">
-            Create Calendar Event
-        </label>
-    </div>
-    <div class="input-group">
-        <label class="check-label">
-            <input type="checkbox" id="sendEmail" style="width:auto;">
-            Send Invoice via Email
-        </label>
-    </div>
-    <button class="btn" onclick="saveInvoice()" style="background:#27ae60;">💾 Save Invoice &amp; Sync</button>
-    <div id="statusMessage"></div>
-</div>
-
-<!-- =====================================================
-     INVOICE PREVIEW
-     ===================================================== -->
-<div class="invoice-container" id="invoiceEl">
-
-    <!-- HEADER -->
-    <header class="inv-header">
-        <div class="brand">
-            <img src="data:image/png;base64,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"
-                 alt="Radiance By Afsana Logo" class="brand-logo">
-            <div>
-                <div class="brand-name">Radiance By Afsana</div>
-                <div class="brand-tagline">Bridal Makeup | Ads | Editorials</div>
+        <div class="preview-toolbar">
+            <span class="preview-title">👁️ A4 Invoice Preview</span>
+            <div class="zoom-controls">
+                <button type="button" class="zoom-btn active" id="btnFit" onclick="setPreviewZoom('fit')">Fit Screen</button>
+                <button type="button" class="zoom-btn" id="btn100" onclick="setPreviewZoom('100')">100%</button>
             </div>
         </div>
-        <div class="inv-title">INVOICE</div>
-    </header>
 
-    <div class="accent-rule"></div>
-
-    <!-- META BAR -->
-    <div class="meta-bar">
-        <span>INVOICE NO. &nbsp;<strong id="d-invNum">RA-2026-001</strong></span>
-        <span id="d-stamp"><span class="status-stamp stamp-pending">▲ Advance Pending</span></span>
-        <span>DATE &nbsp;<strong id="d-invDate">—</strong></span>
-    </div>
-
-    <!-- BILLED TO / EVENT DETAILS -->
-    <div class="info-row">
-        <div class="info-col">
-            <div class="info-col-head">Billed To</div>
-            <table>
-                <tr><td>Name</td><td id="d-clientName"><em style="color:#bbb;">Client Name</em></td></tr>
-                <tr id="r-clientPhone"   style="display:none;"><td>Phone</td><td id="d-clientPhone"></td></tr>
-                <tr id="r-clientEmail"   style="display:none;"><td>Email</td><td id="d-clientEmail"></td></tr>
-                <tr id="r-clientAddress" style="display:none;"><td>Address</td><td id="d-clientAddress"></td></tr>
-            </table>
-        </div>
-        <div class="info-col">
-            <div class="info-col-head">Event Details</div>
-            <table>
-                <tr id="r-eventDate"  style="display:none;"><td>Event Date</td><td id="d-eventDate"></td></tr>
-                <tr id="r-slotTime"   style="display:none;"><td>Slot Time</td><td id="d-slotTime"></td></tr>
-                <tr id="r-eventVenue" style="display:none;"><td>Venue</td><td id="d-eventVenue"></td></tr>
-            </table>
-            <div id="event-placeholder" style="color:#bbb; font-size:12px; font-style:italic;">Event details will appear here</div>
-        </div>
-    </div>
-
-    <!-- ITEMS TABLE -->
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th style="text-align:left;">Item Description</th>
-                <th style="text-align:center;">Qty</th>
-                <th style="text-align:right;">Unit Price</th>
-                <th style="text-align:right;">Total</th>
-            </tr>
-        </thead>
-        <tbody id="d-items"></tbody>
-    </table>
-
-    <!-- BOTTOM: terms + totals -->
-    <div class="bottom-section">
-        <div class="terms-box">
-            <h4>Terms &amp; Conditions</h4>
-            <ul>
-                <li>A 20% non-refundable advance is required to confirm your booking slot.</li>
-                <li>Cancellations must be requested at least 48 hours before the event. The advance payment remains non-refundable.</li>
-                <li>The remaining balance is due on the event day before services begin, or earlier.</li>
-                <li>Transportation charges within Dhaka may apply based on distance and location, verified by an Uber receipt. Locations outside Dhaka are charged separately and agreed in advance.</li>
-            </ul>
+        <!-- Quick actions visible on mobile in Preview tab -->
+        <div class="preview-actions-bar">
+            <button class="btn btn-green" onclick="downloadBothVersions()" style="margin-top:0;">
+                ⬇️ Download BOTH (Pending &amp; Paid)
+            </button>
+            <div class="dl-row" style="margin-top:6px;">
+                <button class="btn btn-purple" onclick="downloadSingle('png')">🖼️ PNG</button>
+                <button class="btn" onclick="downloadSingle('jpg')" style="background:#33155a;">📷 JPG</button>
+            </div>
+            <button class="btn btn-secondary" onclick="switchTab('edit')">
+                ✏️ Back to Edit Form
+            </button>
         </div>
 
-        <div class="totals-box">
-            <div class="total-row" id="r-subtotal" style="display:none;">
-                <span class="lbl">Subtotal</span>
-                <span class="val" id="d-subtotal">BDT 0</span>
-            </div>
-            <div class="total-row" id="r-discount" style="display:none;">
-                <span class="lbl" id="d-discountLabel">Discount</span>
-                <span class="val" id="d-discount" style="color:#c0392b;">– BDT 0</span>
-            </div>
-            <div class="total-row" id="r-transport" style="display:none;">
-                <span class="lbl">Transportation</span>
-                <span class="val" id="d-transport">BDT 0</span>
-            </div>
-            <div class="total-row" id="r-homeService" style="display:none;">
-                <span class="lbl" id="d-homeServiceLabel">Home Service</span>
-                <span class="val" id="d-homeService">BDT 0</span>
-            </div>
-            <div class="total-row total-amount">
-                <span class="lbl">Total Amount</span>
-                <span class="val" id="d-totalAmount">BDT 0</span>
-            </div>
-            <div class="total-row advance-row">
-                <span class="lbl" id="d-advanceLabel">Advance (20%)</span>
-                <span class="val" id="d-advance">BDT 0</span>
-            </div>
-            <div class="total-row balance-due">
-                <span class="lbl">Balance Due</span>
-                <span class="val" id="d-balanceDue">BDT 0</span>
-            </div>
-        </div>
-    </div>
+        <div class="preview-stage" id="previewStage">
+            <div class="invoice-scaler" id="invoiceScaler">
+                <div class="invoice-container" id="invoiceEl">
 
-    <!-- PAYMENT DETAILS -->
-    <div class="payment-section">
-        <div class="payment-head">Payment Details</div>
-        <div class="payment-cols">
-            <div class="pay-col">
-                <div class="pay-col-head">bKash</div>
-                <div class="row"><span class="lbl">Number</span><span class="val acc-num">+8801822263076</span></div>
-                <div class="row"><span class="lbl">Account Name</span><span class="val">Afsana Ferdoushi Bithee</span></div>
-                <div class="bkash-note">Note: A cash-out fee of 1.85% applies when sending via bKash.</div>
-            </div>
-            <div class="pay-col">
-                <div class="pay-col-head">Bank Transfer</div>
-                <div class="row"><span class="lbl">Bank</span><span class="val">BRAC Bank</span></div>
-                <div class="row"><span class="lbl">Account Name</span><span class="val">Afsana Ferdoushi Bithee</span></div>
-                <div class="row"><span class="lbl">Account No.</span><span class="val acc-num">1547 1050 6261 9001</span></div>
-                <div class="row"><span class="lbl">Branch</span><span class="val">Dhanmondi Branch</span></div>
-            </div>
-        </div>
-        <div class="ref-line">Reference: Please use your Invoice Number when making payment.</div>
-    </div>
+                    <!-- HEADER -->
+                    <header class="inv-header">
+                        <div class="brand">
+                            <img src="data:image/png;base64,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"
+                                 alt="Radiance By Afsana Logo" class="brand-logo">
+                            <div>
+                                <div class="brand-name">Radiance By Afsana</div>
+                                <div class="brand-tagline">Bridal Makeup | Ads | Editorials</div>
+                            </div>
+                        </div>
+                        <div class="inv-title">INVOICE</div>
+                    </header>
 
-    <!-- THANK YOU + SEAL + SIGNATURE -->
-    <div class="thankyou-row">
-        <div class="thankyou-text">Thank you for choosing Radiance by Afsana ✦</div>
+                    <div class="accent-rule"></div>
 
-        <div class="sig-area">
-            <!-- circular official seal (SVG, inline) — radius 48 text ring fits full brand name -->
-            <div class="seal-wrap">
-                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- META BAR -->
+                    <div class="meta-bar">
+                        <span>INVOICE NO. &nbsp;<strong id="d-invNum">RA-2026-001</strong></span>
+                        <span id="d-stamp"><span class="status-stamp stamp-pending">▲ Advance Pending</span></span>
+                        <span>DATE &nbsp;<strong id="d-invDate">—</strong></span>
+                    </div>
 
-                    <!-- layers: outer fill → outer border → dot ring → solid inner ring -->
-                    <circle cx="60" cy="60" r="58" fill="#f8f5ff" stroke="#1a0a2e" stroke-width="2.5"/>
-                    <circle cx="60" cy="60" r="50" fill="none" stroke="#9b7fd4" stroke-width="1" stroke-dasharray="3 2.2"/>
-                    <circle cx="60" cy="60" r="43" fill="none" stroke="#1a0a2e" stroke-width="1.2"/>
+                    <!-- BILLED TO / EVENT DETAILS -->
+                    <div class="info-row">
+                        <div class="info-col">
+                            <div class="info-col-head">Billed To</div>
+                            <table>
+                                <tr><td>Name</td><td id="d-clientName"><em style="color:#bbb;">Client Name</em></td></tr>
+                                <tr id="r-clientPhone"   style="display:none;"><td>Phone</td><td id="d-clientPhone"></td></tr>
+                                <tr id="r-clientEmail"   style="display:none;"><td>Email</td><td id="d-clientEmail"></td></tr>
+                                <tr id="r-clientAddress" style="display:none;"><td>Address</td><td id="d-clientAddress"></td></tr>
+                            </table>
+                        </div>
+                        <div class="info-col">
+                            <div class="info-col-head">Event Details</div>
+                            <table>
+                                <tr id="r-eventDate"  style="display:none;"><td>Event Date</td><td id="d-eventDate"></td></tr>
+                                <tr id="r-slotTime"   style="display:none;"><td>Slot Time</td><td id="d-slotTime"></td></tr>
+                                <tr id="r-eventVenue" style="display:none;"><td>Venue</td><td id="d-eventVenue"></td></tr>
+                            </table>
+                            <div id="event-placeholder" style="color:#bbb; font-size:12px; font-style:italic;">Event details will appear here</div>
+                        </div>
+                    </div>
 
-                    <defs>
-                        <!--
-                            TOP ARC — radius 48, centre (60,60)
-                            Left equator (12,60) → clockwise through top (60,12) → right equator (108,60)
-                            Arc length = π × 48 ≈ 150.8 px   (fits "RADIANCE BY AFSANA" at ~120 px)
-                            sweep-flag=1 (CW), large-arc-flag=0 → upper half
-                        -->
-                        <path id="sealTop" d="M 12,60 A 48,48 0 0,1 108,60"/>
+                    <!-- ITEMS TABLE -->
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Item Description</th>
+                                <th style="text-align:center;">Qty</th>
+                                <th style="text-align:right;">Unit Price</th>
+                                <th style="text-align:right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="d-items"></tbody>
+                    </table>
 
-                        <!--
-                            BOTTOM ARC — same radius, same endpoints
-                            Left equator (12,60) → counter-clockwise through bottom (60,108) → right equator (108,60)
-                            sweep-flag=0 → lower half; text reads L→R curving downward
-                        -->
-                        <path id="sealBot" d="M 12,60 A 48,48 0 0,0 108,60"/>
-                    </defs>
+                    <!-- BOTTOM: terms + totals -->
+                    <div class="bottom-section">
+                        <div class="terms-box">
+                            <h4>Terms &amp; Conditions</h4>
+                            <ul>
+                                <li>A 20% non-refundable advance is required to confirm your booking slot.</li>
+                                <li>Cancellations must be requested at least 48 hours before the event. The advance payment remains non-refundable.</li>
+                                <li>The remaining balance is due on the event day before services begin, or earlier.</li>
+                                <li>Transportation charges within Dhaka may apply based on distance and location, verified by an Uber receipt. Locations outside Dhaka are charged separately and agreed in advance.</li>
+                            </ul>
+                        </div>
 
-                    <!-- TOP TEXT: RADIANCE BY AFSANA
-                         font-size 9, letter-spacing 1.6 → ~18 chars × 7px = ~126px
-                         startOffset = (150.8 - 126) / 2 / 150.8 ≈ 8%  → centred
-                    -->
-                    <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
-                          font-size="9" font-weight="700" fill="#1a0a2e" letter-spacing="1.6">
-                        <textPath href="#sealTop" startOffset="8%">RADIANCE BY AFSANA</textPath>
-                    </text>
+                        <div class="totals-box">
+                            <div class="total-row" id="r-subtotal" style="display:none;">
+                                <span class="lbl">Subtotal</span>
+                                <span class="val" id="d-subtotal">BDT 0</span>
+                            </div>
+                            <div class="total-row" id="r-discount" style="display:none;">
+                                <span class="lbl" id="d-discountLabel">Discount</span>
+                                <span class="val" id="d-discount" style="color:#c0392b;">– BDT 0</span>
+                            </div>
+                            <div class="total-row" id="r-transport" style="display:none;">
+                                <span class="lbl">Transportation</span>
+                                <span class="val" id="d-transport">BDT 0</span>
+                            </div>
+                            <div class="total-row" id="r-homeService" style="display:none;">
+                                <span class="lbl" id="d-homeServiceLabel">Home Service</span>
+                                <span class="val" id="d-homeService">BDT 0</span>
+                            </div>
+                            <div class="total-row total-amount">
+                                <span class="lbl">Total Amount</span>
+                                <span class="val" id="d-totalAmount">BDT 0</span>
+                            </div>
+                            <div class="total-row advance-row">
+                                <span class="lbl" id="d-advanceLabel">Advance (20%)</span>
+                                <span class="val" id="d-advance">BDT 0</span>
+                            </div>
+                            <div class="total-row balance-due">
+                                <span class="lbl">Balance Due</span>
+                                <span class="val" id="d-balanceDue">BDT 0</span>
+                            </div>
+                        </div>
+                    </div>
 
-                    <!-- BOTTOM TEXT: OFFICIAL SEAL
-                         font-size 7.5, letter-spacing 2.5 → ~13 chars × 7.3px = ~95px
-                         startOffset = (150.8 - 95) / 2 / 150.8 ≈ 18%  → centred
-                    -->
-                    <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
-                          font-size="7.5" font-weight="600" fill="#9b7fd4" letter-spacing="2.5">
-                        <textPath href="#sealBot" startOffset="18%">OFFICIAL SEAL</textPath>
-                    </text>
+                    <!-- PAYMENT DETAILS -->
+                    <div class="payment-section">
+                        <div class="payment-head">Payment Details</div>
+                        <div class="payment-cols">
+                            <div class="pay-col">
+                                <div class="pay-col-head">bKash</div>
+                                <div class="row"><span class="lbl">Number</span><span class="val acc-num">+8801822263076</span></div>
+                                <div class="row"><span class="lbl">Account Name</span><span class="val">Afsana Ferdoushi Bithee</span></div>
+                                <div class="bkash-note">Note: A cash-out fee of 1.85% applies when sending via bKash.</div>
+                            </div>
+                            <div class="pay-col">
+                                <div class="pay-col-head">Bank Transfer</div>
+                                <div class="row"><span class="lbl">Bank</span><span class="val">BRAC Bank</span></div>
+                                <div class="row"><span class="lbl">Account Name</span><span class="val">Afsana Ferdoushi Bithee</span></div>
+                                <div class="row"><span class="lbl">Account No.</span><span class="val acc-num">1547 1050 6261 9001</span></div>
+                                <div class="row"><span class="lbl">Branch</span><span class="val">Dhanmondi Branch</span></div>
+                            </div>
+                        </div>
+                        <div class="ref-line">Reference: Please use your Invoice Number when making payment.</div>
+                    </div>
 
-                    <!-- decorative star row -->
-                    <text x="60" y="51" text-anchor="middle"
-                          font-family="Georgia, serif" font-size="7.5" fill="#9b7fd4" letter-spacing="5">✦ ✦ ✦</text>
+                    <!-- THANK YOU + SIGNATURE + SEAL -->
+                    <div class="thankyou-row">
+                        <div class="thankyou-text">Thank you for choosing Radiance by Afsana ✦</div>
 
-                    <!-- RA monogram -->
-                    <text x="60" y="67" text-anchor="middle"
-                          font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
-                          font-size="21" font-weight="800" fill="#1a0a2e">RA</text>
+                        <div class="sig-area">
+                            <!-- Circular official seal (SVG inline) -->
+                            <div class="seal-wrap">
+                                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="60" cy="60" r="58" fill="#f8f5ff" stroke="#1a0a2e" stroke-width="2.5"/>
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#9b7fd4" stroke-width="1" stroke-dasharray="3 2.2"/>
+                                    <circle cx="60" cy="60" r="43" fill="none" stroke="#1a0a2e" stroke-width="1.2"/>
 
-                    <!-- AUTHORIZED tagline -->
-                    <text x="60" y="78" text-anchor="middle"
-                          font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
-                          font-size="6" fill="#3b1f6b" letter-spacing="1.2">AUTHORIZED</text>
-                </svg>
-            </div>
+                                    <defs>
+                                        <path id="sealTop" d="M 12,60 A 48,48 0 0,1 108,60"/>
+                                        <path id="sealBot" d="M 12,60 A 48,48 0 0,0 108,60"/>
+                                    </defs>
 
-            <div class="signature-block">
-                <div class="sig-line"></div>
-                <div class="sig-label">Authorised By</div>
-                <div class="sig-name">Afsana Ferdoushi Bithee</div>
-            </div>
-        </div>
-    </div>
+                                    <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                                          font-size="9" font-weight="700" fill="#1a0a2e" letter-spacing="1.6">
+                                        <textPath href="#sealTop" startOffset="8%">RADIANCE BY AFSANA</textPath>
+                                    </text>
 
-    <!-- FOOTER -->
-    <footer class="inv-footer">
-        <div class="footer-item">
-            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.054 1.805.249 2.227.415.56.217.96.477 1.382.898.421.421.681.821.898 1.381.166.422.361 1.057.415 2.227.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.054 1.17-.249 1.805-.415 2.227a3.69 3.69 0 01-.898 1.382 3.69 3.69 0 01-1.382.898c-.422.166-1.057.361-2.227.415-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.054-1.805-.249-2.227-.415a3.69 3.69 0 01-1.382-.898 3.69 3.69 0 01-.898-1.382c-.166-.422-.361-1.057-.415-2.227C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.054-1.17.249-1.805.415-2.227a3.69 3.69 0 01.898-1.381 3.69 3.69 0 011.382-.898c.422-.166 1.057-.361 2.227-.415C8.416 2.175 8.796 2.163 12 2.163zm0-2.163C8.741 0 8.333.014 7.053.072 5.775.13 4.902.333 4.14.63a5.853 5.853 0 00-2.126 1.384A5.853 5.853 0 00.63 4.14C.333 4.902.13 5.775.072 7.053.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.058 1.278.261 2.151.558 2.912a5.853 5.853 0 001.384 2.126 5.853 5.853 0 002.126 1.384c.761.297 1.634.5 2.912.558C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 1.278-.058 2.151-.261 2.912-.558a5.853 5.853 0 002.126-1.384 5.853 5.853 0 001.384-2.126c.297-.761.5-1.634.558-2.912.058-1.28.072-1.689.072-4.948 0-3.259-.014-3.667-.072-4.947-.058-1.278-.261-2.151-.558-2.913a5.853 5.853 0 00-1.384-2.126A5.853 5.853 0 0019.86.63C19.098.333 18.225.13 16.947.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-            radiancebyafsana
-        </div>
-        <div class="footer-item">
-            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.887v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-            radiancebyafsana
-        </div>
-        <div class="footer-item">
-            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C9.61 21 3 14.39 3 6.5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
-            +8801822263076
-        </div>
-        <div class="footer-item">
-            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
-            radiancebyafsana@gmail.com
-        </div>
-    </footer>
+                                    <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                                          font-size="7.5" font-weight="600" fill="#9b7fd4" letter-spacing="2.5">
+                                        <textPath href="#sealBot" startOffset="18%">OFFICIAL SEAL</textPath>
+                                    </text>
 
-</div><!-- end .invoice-container -->
+                                    <text x="60" y="51" text-anchor="middle"
+                                          font-family="Georgia, serif" font-size="7.5" fill="#9b7fd4" letter-spacing="5">✦ ✦ ✦</text>
+
+                                    <text x="60" y="67" text-anchor="middle"
+                                          font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                                          font-size="21" font-weight="800" fill="#1a0a2e">RA</text>
+
+                                    <text x="60" y="78" text-anchor="middle"
+                                          font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                                          font-size="6" fill="#3b1f6b" letter-spacing="1.2">AUTHORIZED</text>
+                                </svg>
+                            </div>
+
+                            <div class="signature-block">
+                                <div class="sig-line"></div>
+                                <div class="sig-label">Authorised By</div>
+                                <div class="sig-name">Afsana Ferdoushi Bithee</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <footer class="inv-footer">
+                        <div class="footer-item">
+                            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.054 1.805.249 2.227.415.56.217.96.477 1.382.898.421.421.681.821.898 1.381.166.422.361 1.057.415 2.227.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.054 1.17-.249 1.805-.415 2.227a3.69 3.69 0 01-.898 1.382 3.69 3.69 0 01-1.382.898c-.422.166-1.057.361-2.227.415-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.054-1.805-.249-2.227-.415a3.69 3.69 0 01-1.382-.898 3.69 3.69 0 01-.898-1.382c-.166-.422-.361-1.057-.415-2.227C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.054-1.17.249-1.805.415-2.227a3.69 3.69 0 01.898-1.381 3.69 3.69 0 011.382-.898c.422-.166 1.057-.361 2.227-.415C8.416 2.175 8.796 2.163 12 2.163zm0-2.163C8.741 0 8.333.014 7.053.072 5.775.13 4.902.333 4.14.63a5.853 5.853 0 00-2.126 1.384A5.853 5.853 0 00.63 4.14C.333 4.902.13 5.775.072 7.053.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.058 1.278.261 2.151.558 2.912a5.853 5.853 0 001.384 2.126 5.853 5.853 0 002.126 1.384c.761.297 1.634.5 2.912.558C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 1.278-.058 2.151-.261 2.912-.558a5.853 5.853 0 002.126-1.384 5.853 5.853 0 001.384-2.126c.297-.761.5-1.634.558-2.912.058-1.28.072-1.689.072-4.948 0-3.259-.014-3.667-.072-4.947-.058-1.278-.261-2.151-.558-2.913a5.853 5.853 0 00-1.384-2.126A5.853 5.853 0 0019.86.63C19.098.333 18.225.13 16.947.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                            radiancebyafsana
+                        </div>
+                        <div class="footer-item">
+                            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.887v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+                            radiancebyafsana
+                        </div>
+                        <div class="footer-item">
+                            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C9.61 21 3 14.39 3 6.5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+                            +8801822263076
+                        </div>
+                        <div class="footer-item">
+                            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
+                            radiancebyafsana@gmail.com
+                        </div>
+                    </footer>
+
+                </div><!-- end .invoice-container -->
+            </div><!-- end .invoice-scaler -->
+        </div><!-- end .preview-stage -->
+
+    </div><!-- end .preview-column -->
+
+</div><!-- end .app-layout -->
 
 <!-- =====================================================
      JAVASCRIPT
      ===================================================== -->
 <script>
+    // ── MOBILE TAB SWITCHING & ZOOM ───────────────────────
+    let currentMobileTab = 'edit';
+    let currentZoomMode  = 'fit';
+
+    function switchTab(tab) {
+        currentMobileTab = tab;
+        const body = document.body;
+        const tabBtnEdit    = document.getElementById('tabBtnEdit');
+        const tabBtnPreview = document.getElementById('tabBtnPreview');
+
+        if (tab === 'edit') {
+            body.classList.remove('view-mode-preview');
+            body.classList.add('view-mode-edit');
+            tabBtnEdit.classList.add('active');
+            tabBtnPreview.classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            body.classList.remove('view-mode-edit');
+            body.classList.add('view-mode-preview');
+            tabBtnPreview.classList.add('active');
+            tabBtnEdit.classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(updatePreviewScale, 60);
+        }
+    }
+
+    function setPreviewZoom(mode) {
+        currentZoomMode = mode;
+        const btnFit = document.getElementById('btnFit');
+        const btn100 = document.getElementById('btn100');
+
+        if (mode === 'fit') {
+            btnFit.classList.add('active');
+            btn100.classList.remove('active');
+        } else {
+            btn100.classList.add('active');
+            btnFit.classList.remove('active');
+        }
+        updatePreviewScale();
+    }
+
+    function updatePreviewScale() {
+        const stage  = document.getElementById('previewStage');
+        const scaler = document.getElementById('invoiceScaler');
+        const inv    = document.getElementById('invoiceEl');
+        if (!stage || !scaler || !inv) return;
+
+        if (window.innerWidth >= 1025) {
+            // Desktop: natural 100% view
+            scaler.style.transform = 'none';
+            scaler.style.transformOrigin = 'top center';
+            stage.style.height = 'auto';
+            stage.style.overflowX = 'visible';
+            return;
+        }
+
+        // Mobile / Tablet logic:
+        if (currentZoomMode === 'fit') {
+            const stageWidth = stage.clientWidth || (window.innerWidth - 20);
+            const naturalWidth = inv.offsetWidth || 794;
+            const scale = Math.min(1, Math.max(0.28, (stageWidth - 6) / naturalWidth));
+
+            scaler.style.transform = `scale(${scale})`;
+            scaler.style.transformOrigin = 'top center';
+
+            const naturalHeight = inv.offsetHeight || 1123;
+            stage.style.height = `${Math.ceil(naturalHeight * scale) + 10}px`;
+            stage.style.overflowX = 'hidden';
+        } else {
+            // 100% view with touch scroll
+            scaler.style.transform = 'none';
+            scaler.style.transformOrigin = 'top left';
+            stage.style.height = 'auto';
+            stage.style.overflowX = 'auto';
+        }
+    }
+
+    window.addEventListener('resize', () => {
+        updatePreviewScale();
+    });
+    window.addEventListener('orientationchange', () => {
+        setTimeout(updatePreviewScale, 180);
+    });
+
     // ── FORMAT HELPERS ───────────────────────────────────
     function fmt(n) {
         return 'BDT ' + n.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -976,6 +1335,9 @@
         document.getElementById('d-advanceLabel').textContent = `Advance (${advancePct}%)`;
         document.getElementById('d-advance').textContent      = fmt(advanceAmt);
         document.getElementById('d-balanceDue').textContent   = fmt(balanceDue);
+
+        // Refresh preview scale
+        updatePreviewScale();
     }
 
     function setOptRow(rowId, cellId, value) {
@@ -997,28 +1359,43 @@
     })();
 
     // ========================================================
-    // ✅ FIX 2 — IMAGE DOWNLOAD (PNG / JPG via html2canvas)
+    // IMAGE DOWNLOAD (PNG / JPG via html2canvas)
+    // Safely resets zoom scale during capture so A4 quality is pristine
     // ========================================================
     async function captureCanvas() {
         const el = document.getElementById('invoiceEl');
+        const scaler = document.getElementById('invoiceScaler');
         const prevShadow = el.style.boxShadow;
+        const prevScalerTransform = scaler ? scaler.style.transform : '';
+
+        // Temporarily reset any mobile scale transform so capture is 100% full-resolution A4
+        if (scaler) scaler.style.transform = 'none';
         el.style.boxShadow = 'none';
+
+        // Wait a frame for browser layout sync
+        await new Promise(r => requestAnimationFrame(r));
+
         const canvas = await html2canvas(el, {
-            scale: 2.5,          // high DPI — sharp on mobile screens
+            scale: 2.5,          // 2.5x high-res crisp capture
             useCORS: true,
             allowTaint: true,
             backgroundColor: '#ffffff',
             scrollX: 0,
-            scrollY: -window.scrollY
+            scrollY: 0
         });
+
+        // Restore styles
         el.style.boxShadow = prevShadow;
+        if (scaler) scaler.style.transform = prevScalerTransform;
+
         return canvas;
     }
 
     async function downloadSingle(format) {
         const btn = document.getElementById('dlPngBtn');
-        const orig = btn.innerHTML;
-        btn.innerHTML = '⏳ Rendering…'; btn.disabled = true;
+        const orig = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '⏳ Rendering…'; btn.disabled = true; }
+
         try {
             const invNum     = document.getElementById('invNum').value || 'RA';
             const clientRaw  = document.getElementById('clientName').value || 'Client';
@@ -1036,15 +1413,19 @@
             link.download = filename;
             link.href     = canvas.toDataURL(mimeType, quality);
             link.click();
-        } catch (e) { console.error(e); alert('Could not render image. Try Print instead.'); }
-        finally { btn.innerHTML = orig; btn.disabled = false; }
+        } catch (e) {
+            console.error(e);
+            alert('Could not render image. Try Print instead.');
+        } finally {
+            if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+        }
     }
 
-    // ✅ FIX 3 — DOWNLOAD BOTH VERSIONS (pending + paid) in one click
+    // DOWNLOAD BOTH VERSIONS (pending + paid) in one click
     async function downloadBothVersions() {
         const btn  = document.getElementById('dlBothBtn');
-        const orig = btn.innerHTML;
-        btn.innerHTML = '⏳ Rendering both versions…'; btn.disabled = true;
+        const orig = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '⏳ Rendering both…'; btn.disabled = true; }
 
         const statusEl  = document.getElementById('advanceStatus');
         const savedVal  = statusEl.value;
@@ -1055,14 +1436,14 @@
         async function downloadVersion(statusValue, labelSuffix) {
             statusEl.value = statusValue;
             updateInvoice();
-            await new Promise(r => setTimeout(r, 350)); // let DOM repaint
+            await new Promise(r => setTimeout(r, 250)); // let DOM repaint
             const canvas   = await captureCanvas();
             const filename = `Invoice-${invNum}-${clientSafe}-${labelSuffix}.png`;
             const link     = document.createElement('a');
             link.download  = filename;
             link.href      = canvas.toDataURL('image/png', 1.0);
             link.click();
-            await new Promise(r => setTimeout(r, 600)); // browser needs gap between downloads
+            await new Promise(r => setTimeout(r, 500)); // browser download throttle gap
         }
 
         try {
@@ -1072,11 +1453,9 @@
             console.error(e);
             alert('Could not generate images. Try individual downloads instead.');
         } finally {
-            // restore original state
             statusEl.value = savedVal;
             updateInvoice();
-            btn.innerHTML = orig;
-            btn.disabled  = false;
+            if (btn) { btn.innerHTML = orig; btn.disabled = false; }
         }
     }
 
