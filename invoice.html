@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Radiance by Afsana — Invoice Generator</title>
+    <style>
+        /* ===== DESIGN TOKENS ===== */
+        :root {
+            --brand-dark:   #1a0a2e;
+            --brand-mid:    #3b1f6b;
+            --brand-accent: #9b7fd4;
+            --text-main:    #1a1a2e;
+            --text-muted:   #666;
+            --border-light: #e5e0ef;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #eef1f5;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            color: var(--text-main);
+        }
+
+        /* ========================================
+           CONTROL PANEL
+           ======================================== */
+        .controls {
+            flex: 0 0 410px;
+            width: 410px;
+            background: white;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 14px rgba(0,0,0,.09);
+            height: fit-content;
+        }
+        .controls h2 { color: var(--brand-dark); margin-bottom: 16px; font-size: 1.15rem; }
+        .controls h3 { color: var(--brand-mid); margin: 20px 0 10px; font-size: 1rem; text-transform: uppercase; letter-spacing: .5px; }
+
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; color: var(--brand-dark); }
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 8px 11px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.92rem;
+        }
+        .input-group textarea { resize: vertical; min-height: 60px; }
+
+        .input-row { display: flex; gap: 8px; }
+        .input-row .input-group { flex: 1; }
+
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--brand-dark);
+        }
+        .check-label input[type="checkbox"] { width: auto; }
+
+        .btn {
+            background: var(--brand-dark);
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .btn:hover { background: var(--brand-mid); }
+        .btn-green  { background: #27ae60; }
+        .btn-green:hover  { background: #1e8449; }
+        .btn-purple { background: #6c3fc5; }
+        .btn-purple:hover { background: #5533a1; }
+
+        .svc-card {
+            border: 1px dashed #bbb;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+        .svc-card .row { display: flex; gap: 6px; margin-bottom: 6px; }
+        .svc-card input { flex: 1; padding: 7px 9px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.88rem; }
+        .svc-card input.small { flex: 0 0 72px; }
+        .svc-card textarea { width: 100%; padding: 7px 9px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; resize: vertical; min-height: 48px; }
+        .svc-card .del-btn { background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 0.85rem; }
+
+        #statusMessage { margin-top: 12px; padding: 10px; border-radius: 5px; display: none; font-size: 0.9rem; }
+        .panel-divider { border: none; border-top: 2px solid var(--border-light); margin: 20px 0; }
+
+        /* download button group */
+        .dl-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+        .dl-row    { display: flex; gap: 8px; }
+        .dl-row .btn { flex: 1; margin-top: 0; }
+
+        /* ========================================
+           INVOICE CONTAINER — exact A4
+           ======================================== */
+        .invoice-container {
+            flex: 0 0 210mm;
+            width: 210mm;
+            min-width: 210mm;
+            max-width: 210mm;
+            height: 297mm;
+            min-height: 297mm;
+            max-height: 297mm;
+            background: white;
+            padding: 28px 34px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 6px 24px rgba(0,0,0,.13);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* ✅ FIX 1 — base font raised from 11.5 → 13px */
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--text-main);
+        }
+
+        /* ---- HEADER ---- */
+        .inv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .brand { display: flex; align-items: center; gap: 13px; }
+        .brand-logo { width: 58px; height: 44px; object-fit: contain; }
+        .brand-name {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--brand-dark);
+        }
+        .brand-tagline { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+        .inv-title {
+            font-size: 38px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--brand-dark);
+        }
+
+        .accent-rule {
+            height: 2px;
+            background: linear-gradient(to right, var(--brand-dark), var(--brand-accent), transparent);
+            margin-bottom: 12px;
+            border-radius: 2px;
+        }
+
+        /* ---- META BAR ---- */
+        .meta-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--brand-dark);
+            color: white;
+            padding: 8px 13px;
+            border-radius: 5px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            letter-spacing: .4px;
+        }
+        .meta-bar span { font-weight: 400; }
+        .meta-bar strong { font-size: 13px; }
+
+        .status-stamp {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 3px;
+            border: 1.5px solid;
+        }
+        .stamp-pending  { color: #f0a500; border-color: #f0a500; }
+        .stamp-received { color: #5cb85c; border-color: #5cb85c; }
+
+        /* ---- BILLED-TO / EVENT ROW ---- */
+        .info-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .info-col {
+            flex: 1;
+            border: 1px solid var(--border-light);
+            border-radius: 5px;
+            padding: 9px 11px;
+        }
+        .info-col-head {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--brand-accent);
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 4px;
+        }
+        .info-col table { width: 100%; border: none; margin: 0; }
+        .info-col table td {
+            border: none;
+            padding: 2px 0;
+            font-size: 12.5px;
+            vertical-align: top;
+            background: none;
+        }
+        .info-col table td:first-child { width: 90px; color: var(--text-muted); font-weight: 600; }
+
+        /* ---- ITEMS TABLE ---- */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .items-table thead tr th {
+            background: var(--brand-dark);
+            color: white;
+            padding: 9px 11px;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            font-weight: 600;
+        }
+        .items-table thead tr th:nth-child(1) { text-align: left; width: 52%; }
+        .items-table thead tr th:nth-child(2) { text-align: center; width: 8%; }
+        .items-table thead tr th:nth-child(3) { text-align: right; width: 20%; }
+        .items-table thead tr th:nth-child(4) { text-align: right; width: 20%; }
+
+        .items-table tbody tr td {
+            padding: 8px 11px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 12.5px;
+            vertical-align: top;
+        }
+        .items-table tbody tr td:nth-child(1) { text-align: left; }
+        .items-table tbody tr td:nth-child(2) { text-align: center; }
+        .items-table tbody tr td:nth-child(3) { text-align: right; }
+        .items-table tbody tr td:nth-child(4) { text-align: right; font-weight: 600; }
+
+        .item-name { font-weight: 600; font-size: 13px; }
+        .item-inclusions {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            line-height: 1.5;
+        }
+        .item-inclusions li { list-style: none; padding: 0; }
+        .item-inclusions li::before { content: "• "; color: var(--brand-accent); }
+
+        /* ---- BOTTOM SECTION ---- */
+        .bottom-section {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+        .terms-box {
+            flex: 1;
+            border: 1px solid var(--border-light);
+            border-radius: 5px;
+            padding: 9px 11px;
+        }
+        .terms-box h4 {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--brand-accent);
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 4px;
+        }
+        .terms-box ul { padding-left: 15px; }
+        .terms-box ul li { font-size: 10.5px; color: var(--text-muted); line-height: 1.55; margin-bottom: 3px; }
+
+        .totals-box { width: 220px; flex-shrink: 0; }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4.5px 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 12.5px;
+        }
+        .total-row:last-child { border-bottom: none; }
+        .total-row .lbl { color: var(--text-muted); }
+        .total-row .val { text-align: right; font-weight: 500; }
+        .total-row.total-amount .lbl,
+        .total-row.total-amount .val { font-weight: 700; color: var(--brand-dark); font-size: 13px; }
+        .total-row.advance-row .lbl { color: var(--brand-mid); }
+        .total-row.balance-due {
+            background: var(--brand-dark);
+            color: white;
+            padding: 8px 11px;
+            border-radius: 5px;
+            margin-top: 7px;
+            border-bottom: none;
+        }
+        .total-row.balance-due .lbl,
+        .total-row.balance-due .val { color: white; font-weight: 700; font-size: 14.5px; }
+
+        /* ---- PAYMENT DETAILS ---- */
+        .payment-section {
+            border-top: 1.5px solid var(--border-light);
+            padding-top: 9px;
+            margin-bottom: 9px;
+        }
+        .payment-head {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--brand-accent);
+            margin-bottom: 7px;
+        }
+        .payment-cols { display: flex; gap: 0; }
+        .pay-col {
+            flex: 1;
+            font-size: 11.5px;
+            line-height: 1.65;
+            padding: 7px 11px;
+            border: 1px solid var(--border-light);
+            border-radius: 5px;
+        }
+        .pay-col + .pay-col { margin-left: 10px; }
+        .pay-col-head {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--brand-dark);
+            margin-bottom: 4px;
+        }
+        .pay-col .row { display: flex; gap: 4px; }
+        .pay-col .lbl { color: var(--text-muted); font-weight: 600; min-width: 90px; }
+        .pay-col .val { font-weight: 500; word-break: break-all; }
+        .pay-col .acc-num { font-weight: 700; color: var(--brand-dark); font-family: monospace; letter-spacing: 1px; }
+        .bkash-note {
+            margin-top: 5px;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-style: italic;
+            border-top: 1px solid var(--border-light);
+            padding-top: 4px;
+        }
+        .ref-line {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* ---- THANK YOU + SIGNATURE + SEAL ---- */
+        .thankyou-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 7px;
+        }
+        .thankyou-text {
+            font-size: 12px;
+            font-style: italic;
+            color: var(--brand-mid);
+            font-weight: 500;
+            align-self: flex-end;
+            padding-bottom: 2px;
+        }
+        /* Seal + signature side by side */
+        .sig-area {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        /* ✅ FIX 4+5 — circular SVG seal */
+        .seal-wrap {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            opacity: 0.88;
+        }
+        .seal-wrap svg { width: 100%; height: 100%; }
+
+        .signature-block { text-align: right; }
+        .sig-line {
+            border-top: 1.5px solid var(--brand-dark);
+            width: 130px;
+            margin-bottom: 3px;
+            margin-left: auto;
+        }
+        .sig-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+        .sig-name  { font-size: 11.5px; font-weight: 600; color: var(--brand-dark); }
+
+        /* ---- FOOTER ---- */
+        .inv-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-light);
+            padding-top: 7px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .footer-icon { width: 14px; height: 14px; fill: var(--brand-accent); flex-shrink: 0; }
+
+        /* ========================================
+           PRINT
+           ======================================== */
+        @media print {
+            body { background: white !important; margin: 0 !important; padding: 0 !important; display: block !important; }
+            .controls { display: none !important; }
+            .invoice-container {
+                box-shadow: none !important;
+                width: 210mm !important; min-width: 210mm !important; max-width: 210mm !important;
+                height: 297mm !important; min-height: 297mm !important; max-height: 297mm !important;
+                padding: 28px 34px 20px !important;
+                margin: 0 auto !important;
+            }
+            @page { size: A4 portrait; margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+
+    <script src="html2canvas.min.js"></script>
+</head>
+
+<body>
+
+<!-- =====================================================
+     CONTROL PANEL
+     ===================================================== -->
+<div class="controls">
+    <h2>🧾 Invoice Generator</h2>
+
+    <h3>Invoice Info</h3>
+    <div class="input-row">
+        <div class="input-group">
+            <label>Invoice Number</label>
+            <input type="text" id="invNum" placeholder="RA-2026-001" oninput="updateInvoice()">
+        </div>
+        <div class="input-group">
+            <label>Issue Date</label>
+            <input type="date" id="invDate" oninput="updateInvoice()">
+        </div>
+    </div>
+
+    <h3>Client Details</h3>
+    <div class="input-group">
+        <label>Client Name *</label>
+        <input type="text" id="clientName" placeholder="e.g., Nusrat Jahan" oninput="updateInvoice()">
+    </div>
+    <div class="input-row">
+        <div class="input-group">
+            <label>Client Phone</label>
+            <input type="text" id="clientPhone" placeholder="+8801XXXXXXXXX" oninput="updateInvoice()">
+        </div>
+        <div class="input-group">
+            <label>Client Email</label>
+            <input type="email" id="clientEmail" placeholder="client@email.com" oninput="updateInvoice()">
+        </div>
+    </div>
+    <div class="input-group">
+        <label>Client Address</label>
+        <input type="text" id="clientAddress" placeholder="e.g., Dhanmondi, Dhaka" oninput="updateInvoice()">
+    </div>
+
+    <h3>Event Details</h3>
+    <div class="input-group">
+        <label>Event Date(s)</label>
+        <input type="text" id="eventDate" placeholder="e.g., Friday, 22 January 2027" oninput="updateInvoice()">
+    </div>
+    <div class="input-row">
+        <div class="input-group">
+            <label>Slot Time</label>
+            <input type="text" id="slotTime" placeholder="e.g., 10:00 AM (Morning)" oninput="updateInvoice()">
+        </div>
+        <div class="input-group">
+            <label>Venue / Area</label>
+            <input type="text" id="eventVenue" placeholder="e.g., Dhaka Club" oninput="updateInvoice()">
+        </div>
+    </div>
+
+    <h3>Services</h3>
+    <div id="services-list"></div>
+    <button class="btn" onclick="addServiceRow()" style="background:var(--brand-mid);">+ Add Service Item</button>
+
+    <h3>Charges &amp; Adjustments</h3>
+    <div class="input-group">
+        <label class="check-label">
+            <input type="checkbox" id="transportApplied" onchange="updateInvoice()">
+            Apply Transportation Charge
+        </label>
+    </div>
+    <div class="input-group">
+        <label>Transportation Charge (BDT)</label>
+        <input type="number" id="transCharge" value="2500" oninput="updateInvoice()">
+    </div>
+    <div class="input-group">
+        <label class="check-label">
+            <input type="checkbox" id="homeServiceApplied" onchange="updateInvoice()">
+            Apply Home Service Charge
+        </label>
+    </div>
+    <div class="input-group">
+        <label>Home Service Charge (%)</label>
+        <input type="number" id="homeServicePct" value="15" oninput="updateInvoice()">
+    </div>
+    <div class="input-group">
+        <label class="check-label">
+            <input type="checkbox" id="discountApplied" onchange="updateInvoice()">
+            Apply Discount
+        </label>
+    </div>
+    <div class="input-group">
+        <label>Discount (BDT — fixed amount)</label>
+        <input type="number" id="discountAmt" value="0" oninput="updateInvoice()">
+    </div>
+
+    <h3>Advance</h3>
+    <div class="input-row">
+        <div class="input-group">
+            <label>Advance (%)</label>
+            <input type="number" id="advancePct" value="20" oninput="updateInvoice()">
+        </div>
+        <div class="input-group">
+            <label>Current Advance Status</label>
+            <select id="advanceStatus" onchange="updateInvoice()">
+                <option value="unpaid">Unpaid / Pending</option>
+                <option value="paid">Paid</option>
+            </select>
+        </div>
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- ✅ FIX 2+3 — PNG/JPG download; dual-version download -->
+    <div class="dl-group">
+        <div style="font-size:0.88rem; font-weight:600; color:var(--brand-dark); margin-bottom:2px;">
+            📥 Download Invoice Image
+        </div>
+
+        <!-- Single downloads -->
+        <div class="dl-row">
+            <button class="btn btn-purple" id="dlPngBtn"
+                    onclick="downloadSingle('png')" style="margin-top:0;">
+                🖼️ PNG (current state)
+            </button>
+            <button class="btn" onclick="downloadSingle('jpg')"
+                    style="margin-top:0; background:#33155a;">
+                📷 JPG (current state)
+            </button>
+        </div>
+
+        <!-- Dual download — both stamps in one click -->
+        <button class="btn btn-green" id="dlBothBtn" onclick="downloadBothVersions()">
+            ⬇️ Download BOTH — Pending &amp; Paid versions
+        </button>
+
+        <button class="btn" onclick="window.print()" style="background:#555;">
+            🖨️ Print / Save as PDF
+        </button>
+    </div>
+
+    <hr class="panel-divider">
+
+    <h3>💾 Save &amp; Sync</h3>
+    <div class="input-group">
+        <label class="check-label">
+            <input type="checkbox" id="saveToSheets" checked style="width:auto;">
+            Save to Google Sheets
+        </label>
+    </div>
+    <div class="input-group">
+        <label class="check-label">
+            <input type="checkbox" id="createCalendarEvent" checked style="width:auto;">
+            Create Calendar Event
+        </label>
+    </div>
+    <div class="input-group">
+        <label class="check-label">
+            <input type="checkbox" id="sendEmail" style="width:auto;">
+            Send Invoice via Email
+        </label>
+    </div>
+    <button class="btn" onclick="saveInvoice()" style="background:#27ae60;">💾 Save Invoice &amp; Sync</button>
+    <div id="statusMessage"></div>
+</div>
+
+<!-- =====================================================
+     INVOICE PREVIEW
+     ===================================================== -->
+<div class="invoice-container" id="invoiceEl">
+
+    <!-- HEADER -->
+    <header class="inv-header">
+        <div class="brand">
+            <img src="data:image/png;base64,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"
+                 alt="Radiance By Afsana Logo" class="brand-logo">
+            <div>
+                <div class="brand-name">Radiance By Afsana</div>
+                <div class="brand-tagline">Bridal Makeup | Ads | Editorials</div>
+            </div>
+        </div>
+        <div class="inv-title">INVOICE</div>
+    </header>
+
+    <div class="accent-rule"></div>
+
+    <!-- META BAR -->
+    <div class="meta-bar">
+        <span>INVOICE NO. &nbsp;<strong id="d-invNum">RA-2026-001</strong></span>
+        <span id="d-stamp"><span class="status-stamp stamp-pending">▲ Advance Pending</span></span>
+        <span>DATE &nbsp;<strong id="d-invDate">—</strong></span>
+    </div>
+
+    <!-- BILLED TO / EVENT DETAILS -->
+    <div class="info-row">
+        <div class="info-col">
+            <div class="info-col-head">Billed To</div>
+            <table>
+                <tr><td>Name</td><td id="d-clientName"><em style="color:#bbb;">Client Name</em></td></tr>
+                <tr id="r-clientPhone"   style="display:none;"><td>Phone</td><td id="d-clientPhone"></td></tr>
+                <tr id="r-clientEmail"   style="display:none;"><td>Email</td><td id="d-clientEmail"></td></tr>
+                <tr id="r-clientAddress" style="display:none;"><td>Address</td><td id="d-clientAddress"></td></tr>
+            </table>
+        </div>
+        <div class="info-col">
+            <div class="info-col-head">Event Details</div>
+            <table>
+                <tr id="r-eventDate"  style="display:none;"><td>Event Date</td><td id="d-eventDate"></td></tr>
+                <tr id="r-slotTime"   style="display:none;"><td>Slot Time</td><td id="d-slotTime"></td></tr>
+                <tr id="r-eventVenue" style="display:none;"><td>Venue</td><td id="d-eventVenue"></td></tr>
+            </table>
+            <div id="event-placeholder" style="color:#bbb; font-size:12px; font-style:italic;">Event details will appear here</div>
+        </div>
+    </div>
+
+    <!-- ITEMS TABLE -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="text-align:left;">Item Description</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Unit Price</th>
+                <th style="text-align:right;">Total</th>
+            </tr>
+        </thead>
+        <tbody id="d-items"></tbody>
+    </table>
+
+    <!-- BOTTOM: terms + totals -->
+    <div class="bottom-section">
+        <div class="terms-box">
+            <h4>Terms &amp; Conditions</h4>
+            <ul>
+                <li>A 20% non-refundable advance is required to confirm your booking slot.</li>
+                <li>Cancellations must be requested at least 48 hours before the event. The advance payment remains non-refundable.</li>
+                <li>The remaining balance is due on the event day before services begin, or earlier.</li>
+                <li>Transportation charges within Dhaka may apply based on distance and location, verified by an Uber receipt. Locations outside Dhaka are charged separately and agreed in advance.</li>
+            </ul>
+        </div>
+
+        <div class="totals-box">
+            <div class="total-row" id="r-subtotal" style="display:none;">
+                <span class="lbl">Subtotal</span>
+                <span class="val" id="d-subtotal">BDT 0</span>
+            </div>
+            <div class="total-row" id="r-discount" style="display:none;">
+                <span class="lbl" id="d-discountLabel">Discount</span>
+                <span class="val" id="d-discount" style="color:#c0392b;">– BDT 0</span>
+            </div>
+            <div class="total-row" id="r-transport" style="display:none;">
+                <span class="lbl">Transportation</span>
+                <span class="val" id="d-transport">BDT 0</span>
+            </div>
+            <div class="total-row" id="r-homeService" style="display:none;">
+                <span class="lbl" id="d-homeServiceLabel">Home Service</span>
+                <span class="val" id="d-homeService">BDT 0</span>
+            </div>
+            <div class="total-row total-amount">
+                <span class="lbl">Total Amount</span>
+                <span class="val" id="d-totalAmount">BDT 0</span>
+            </div>
+            <div class="total-row advance-row">
+                <span class="lbl" id="d-advanceLabel">Advance (20%)</span>
+                <span class="val" id="d-advance">BDT 0</span>
+            </div>
+            <div class="total-row balance-due">
+                <span class="lbl">Balance Due</span>
+                <span class="val" id="d-balanceDue">BDT 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYMENT DETAILS -->
+    <div class="payment-section">
+        <div class="payment-head">Payment Details</div>
+        <div class="payment-cols">
+            <div class="pay-col">
+                <div class="pay-col-head">bKash</div>
+                <div class="row"><span class="lbl">Number</span><span class="val acc-num">+8801822263076</span></div>
+                <div class="row"><span class="lbl">Account Name</span><span class="val">Afsana Ferdoushi Bithee</span></div>
+                <div class="bkash-note">Note: A cash-out fee of 1.85% applies when sending via bKash.</div>
+            </div>
+            <div class="pay-col">
+                <div class="pay-col-head">Bank Transfer</div>
+                <div class="row"><span class="lbl">Bank</span><span class="val">BRAC Bank</span></div>
+                <div class="row"><span class="lbl">Account Name</span><span class="val">Afsana Ferdoushi Bithee</span></div>
+                <div class="row"><span class="lbl">Account No.</span><span class="val acc-num">1547 1050 6261 9001</span></div>
+                <div class="row"><span class="lbl">Branch</span><span class="val">Dhanmondi Branch</span></div>
+            </div>
+        </div>
+        <div class="ref-line">Reference: Please use your Invoice Number when making payment.</div>
+    </div>
+
+    <!-- THANK YOU + SEAL + SIGNATURE -->
+    <div class="thankyou-row">
+        <div class="thankyou-text">Thank you for choosing Radiance by Afsana ✦</div>
+
+        <div class="sig-area">
+            <!-- circular official seal (SVG, inline) — radius 48 text ring fits full brand name -->
+            <div class="seal-wrap">
+                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+
+                    <!-- layers: outer fill → outer border → dot ring → solid inner ring -->
+                    <circle cx="60" cy="60" r="58" fill="#f8f5ff" stroke="#1a0a2e" stroke-width="2.5"/>
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#9b7fd4" stroke-width="1" stroke-dasharray="3 2.2"/>
+                    <circle cx="60" cy="60" r="43" fill="none" stroke="#1a0a2e" stroke-width="1.2"/>
+
+                    <defs>
+                        <!--
+                            TOP ARC — radius 48, centre (60,60)
+                            Left equator (12,60) → clockwise through top (60,12) → right equator (108,60)
+                            Arc length = π × 48 ≈ 150.8 px   (fits "RADIANCE BY AFSANA" at ~120 px)
+                            sweep-flag=1 (CW), large-arc-flag=0 → upper half
+                        -->
+                        <path id="sealTop" d="M 12,60 A 48,48 0 0,1 108,60"/>
+
+                        <!--
+                            BOTTOM ARC — same radius, same endpoints
+                            Left equator (12,60) → counter-clockwise through bottom (60,108) → right equator (108,60)
+                            sweep-flag=0 → lower half; text reads L→R curving downward
+                        -->
+                        <path id="sealBot" d="M 12,60 A 48,48 0 0,0 108,60"/>
+                    </defs>
+
+                    <!-- TOP TEXT: RADIANCE BY AFSANA
+                         font-size 9, letter-spacing 1.6 → ~18 chars × 7px = ~126px
+                         startOffset = (150.8 - 126) / 2 / 150.8 ≈ 8%  → centred
+                    -->
+                    <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                          font-size="9" font-weight="700" fill="#1a0a2e" letter-spacing="1.6">
+                        <textPath href="#sealTop" startOffset="8%">RADIANCE BY AFSANA</textPath>
+                    </text>
+
+                    <!-- BOTTOM TEXT: OFFICIAL SEAL
+                         font-size 7.5, letter-spacing 2.5 → ~13 chars × 7.3px = ~95px
+                         startOffset = (150.8 - 95) / 2 / 150.8 ≈ 18%  → centred
+                    -->
+                    <text font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                          font-size="7.5" font-weight="600" fill="#9b7fd4" letter-spacing="2.5">
+                        <textPath href="#sealBot" startOffset="18%">OFFICIAL SEAL</textPath>
+                    </text>
+
+                    <!-- decorative star row -->
+                    <text x="60" y="51" text-anchor="middle"
+                          font-family="Georgia, serif" font-size="7.5" fill="#9b7fd4" letter-spacing="5">✦ ✦ ✦</text>
+
+                    <!-- RA monogram -->
+                    <text x="60" y="67" text-anchor="middle"
+                          font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                          font-size="21" font-weight="800" fill="#1a0a2e">RA</text>
+
+                    <!-- AUTHORIZED tagline -->
+                    <text x="60" y="78" text-anchor="middle"
+                          font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+                          font-size="6" fill="#3b1f6b" letter-spacing="1.2">AUTHORIZED</text>
+                </svg>
+            </div>
+
+            <div class="signature-block">
+                <div class="sig-line"></div>
+                <div class="sig-label">Authorised By</div>
+                <div class="sig-name">Afsana Ferdoushi Bithee</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="inv-footer">
+        <div class="footer-item">
+            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.054 1.805.249 2.227.415.56.217.96.477 1.382.898.421.421.681.821.898 1.381.166.422.361 1.057.415 2.227.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.054 1.17-.249 1.805-.415 2.227a3.69 3.69 0 01-.898 1.382 3.69 3.69 0 01-1.382.898c-.422.166-1.057.361-2.227.415-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.054-1.805-.249-2.227-.415a3.69 3.69 0 01-1.382-.898 3.69 3.69 0 01-.898-1.382c-.166-.422-.361-1.057-.415-2.227C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.054-1.17.249-1.805.415-2.227a3.69 3.69 0 01.898-1.381 3.69 3.69 0 011.382-.898c.422-.166 1.057-.361 2.227-.415C8.416 2.175 8.796 2.163 12 2.163zm0-2.163C8.741 0 8.333.014 7.053.072 5.775.13 4.902.333 4.14.63a5.853 5.853 0 00-2.126 1.384A5.853 5.853 0 00.63 4.14C.333 4.902.13 5.775.072 7.053.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.058 1.278.261 2.151.558 2.912a5.853 5.853 0 001.384 2.126 5.853 5.853 0 002.126 1.384c.761.297 1.634.5 2.912.558C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 1.278-.058 2.151-.261 2.912-.558a5.853 5.853 0 002.126-1.384 5.853 5.853 0 001.384-2.126c.297-.761.5-1.634.558-2.912.058-1.28.072-1.689.072-4.948 0-3.259-.014-3.667-.072-4.947-.058-1.278-.261-2.151-.558-2.913a5.853 5.853 0 00-1.384-2.126A5.853 5.853 0 0019.86.63C19.098.333 18.225.13 16.947.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+            radiancebyafsana
+        </div>
+        <div class="footer-item">
+            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.887v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+            radiancebyafsana
+        </div>
+        <div class="footer-item">
+            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C9.61 21 3 14.39 3 6.5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+            +8801822263076
+        </div>
+        <div class="footer-item">
+            <svg class="footer-icon" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
+            radiancebyafsana@gmail.com
+        </div>
+    </footer>
+
+</div><!-- end .invoice-container -->
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+<script>
+    // ── FORMAT HELPERS ───────────────────────────────────
+    function fmt(n) {
+        return 'BDT ' + n.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+    function show(el, visible) { el.style.display = visible ? '' : 'none'; }
+
+    // ── SERVICE DATA ─────────────────────────────────────
+    let services = [
+        { name: 'Holud Package', inclusions: '', price: 13000, qty: 1 },
+        { name: 'Reception Package', inclusions: '', price: 16000, qty: 1 }
+    ];
+
+    function renderServiceInputs() {
+        const container = document.getElementById('services-list');
+        container.innerHTML = '';
+        services.forEach((svc, i) => {
+            const card = document.createElement('div');
+            card.className = 'svc-card';
+            card.innerHTML = `
+                <div class="row">
+                    <input type="text" placeholder="Package / Service Name" value="${svc.name}"
+                           oninput="services[${i}].name=this.value; updateInvoice()">
+                    <button class="del-btn" onclick="removeService(${i})">✕</button>
+                </div>
+                <textarea placeholder="Inclusions (one per line → bullet list on invoice)"
+                          oninput="services[${i}].inclusions=this.value; updateInvoice()">${svc.inclusions}</textarea>
+                <div class="row" style="margin-top:6px;">
+                    <input type="number" placeholder="Unit Price" value="${svc.price}"
+                           oninput="services[${i}].price=Number(this.value); updateInvoice()">
+                    <input type="number" class="small" placeholder="Qty" value="${svc.qty}"
+                           oninput="services[${i}].qty=Number(this.value)||1; updateInvoice()">
+                </div>`;
+            container.appendChild(card);
+        });
+    }
+    function addServiceRow() {
+        services.push({ name: '', inclusions: '', price: 0, qty: 1 });
+        renderServiceInputs(); updateInvoice();
+    }
+    function removeService(i) {
+        services.splice(i, 1); renderServiceInputs(); updateInvoice();
+    }
+
+    // ── MAIN UPDATE ──────────────────────────────────────
+    function updateInvoice() {
+        const invNum = document.getElementById('invNum').value.trim() || 'RA-2026-001';
+        document.getElementById('d-invNum').textContent = invNum;
+
+        const dateInput = document.getElementById('invDate').value;
+        if (dateInput) {
+            const d = new Date(dateInput + 'T00:00:00');
+            const months = ['January','February','March','April','May','June',
+                            'July','August','September','October','November','December'];
+            const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            document.getElementById('d-invDate').textContent =
+                days[d.getDay()] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+        } else {
+            document.getElementById('d-invDate').textContent = '—';
+        }
+
+        // Stamp
+        const stampEl = document.getElementById('d-stamp');
+        if (document.getElementById('advanceStatus').value === 'paid') {
+            stampEl.innerHTML = '<span class="status-stamp stamp-received">✔ Advance Received</span>';
+        } else {
+            stampEl.innerHTML = '<span class="status-stamp stamp-pending">▲ Advance Pending</span>';
+        }
+
+        // Client
+        const clientName    = document.getElementById('clientName').value.trim();
+        const clientPhone   = document.getElementById('clientPhone').value.trim();
+        const clientEmail   = document.getElementById('clientEmail').value.trim();
+        const clientAddress = document.getElementById('clientAddress').value.trim();
+        document.getElementById('d-clientName').textContent = clientName || '—';
+        setOptRow('r-clientPhone',   'd-clientPhone',   clientPhone);
+        setOptRow('r-clientEmail',   'd-clientEmail',   clientEmail);
+        setOptRow('r-clientAddress', 'd-clientAddress', clientAddress);
+
+        // Event
+        const eventDate  = document.getElementById('eventDate').value.trim();
+        const slotTime   = document.getElementById('slotTime').value.trim();
+        const eventVenue = document.getElementById('eventVenue').value.trim();
+        setOptRow('r-eventDate',  'd-eventDate',  eventDate);
+        setOptRow('r-slotTime',   'd-slotTime',   slotTime);
+        setOptRow('r-eventVenue', 'd-eventVenue', eventVenue);
+        document.getElementById('event-placeholder').style.display =
+            (eventDate || slotTime || eventVenue) ? 'none' : '';
+
+        // Items
+        const tbody = document.getElementById('d-items');
+        tbody.innerHTML = '';
+        let subtotal = 0;
+        services.forEach(svc => {
+            const lineTotal = (svc.price || 0) * (svc.qty || 1);
+            subtotal += lineTotal;
+            const incLines = (svc.inclusions || '').split('\n').map(l => l.trim()).filter(Boolean);
+            const incHtml  = incLines.length
+                ? '<ul class="item-inclusions">' + incLines.map(l => `<li>${l}</li>`).join('') + '</ul>'
+                : '';
+            tbody.innerHTML += `
+                <tr>
+                    <td><span class="item-name">${svc.name || '—'}</span>${incHtml}</td>
+                    <td>${svc.qty || 1}</td>
+                    <td>${fmt(svc.price || 0)}</td>
+                    <td>${fmt(lineTotal)}</td>
+                </tr>`;
+        });
+
+        // Calculations
+        const discountApplied    = document.getElementById('discountApplied').checked;
+        const discountFixed      = discountApplied ? (Number(document.getElementById('discountAmt').value) || 0) : 0;
+        const transportApplied   = document.getElementById('transportApplied').checked;
+        const transportAmt       = transportApplied ? (Number(document.getElementById('transCharge').value) || 0) : 0;
+        const homeServiceApplied = document.getElementById('homeServiceApplied').checked;
+        const homeServicePct     = Number(document.getElementById('homeServicePct').value) || 0;
+        const homeServiceAmt     = homeServiceApplied ? Math.round(subtotal * homeServicePct / 100) : 0;
+        const advancePct         = Number(document.getElementById('advancePct').value) || 20;
+
+        const totalAmount = subtotal - discountFixed + transportAmt + homeServiceAmt;
+        const advanceAmt  = Math.round(totalAmount * advancePct / 100);
+        const balanceDue  = totalAmount - advanceAmt;
+
+        show(document.getElementById('r-subtotal'),    discountApplied);
+        show(document.getElementById('r-discount'),    discountApplied);
+        if (discountApplied) {
+            document.getElementById('d-subtotal').textContent = fmt(subtotal);
+            document.getElementById('d-discount').textContent = '– ' + fmt(discountFixed);
+        }
+        show(document.getElementById('r-transport'),   transportApplied);
+        if (transportApplied) document.getElementById('d-transport').textContent = fmt(transportAmt);
+        show(document.getElementById('r-homeService'), homeServiceApplied);
+        if (homeServiceApplied) {
+            document.getElementById('d-homeServiceLabel').textContent = `Home Service (${homeServicePct}%)`;
+            document.getElementById('d-homeService').textContent = fmt(homeServiceAmt);
+        }
+
+        document.getElementById('d-totalAmount').textContent = fmt(totalAmount);
+        document.getElementById('d-advanceLabel').textContent = `Advance (${advancePct}%)`;
+        document.getElementById('d-advance').textContent      = fmt(advanceAmt);
+        document.getElementById('d-balanceDue').textContent   = fmt(balanceDue);
+    }
+
+    function setOptRow(rowId, cellId, value) {
+        const row  = document.getElementById(rowId);
+        const cell = document.getElementById(cellId);
+        if (value) { cell.textContent = value; row.style.display = ''; }
+        else        { row.style.display = 'none'; }
+    }
+
+    // ── INIT ─────────────────────────────────────────────
+    (function init() {
+        const today = new Date();
+        const pad   = n => String(n).padStart(2,'0');
+        document.getElementById('invDate').value =
+            `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+        document.getElementById('invNum').value = `RA-${today.getFullYear()}-001`;
+        renderServiceInputs();
+        updateInvoice();
+    })();
+
+    // ========================================================
+    // ✅ FIX 2 — IMAGE DOWNLOAD (PNG / JPG via html2canvas)
+    // ========================================================
+    async function captureCanvas() {
+        const el = document.getElementById('invoiceEl');
+        const prevShadow = el.style.boxShadow;
+        el.style.boxShadow = 'none';
+        const canvas = await html2canvas(el, {
+            scale: 2.5,          // high DPI — sharp on mobile screens
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            scrollX: 0,
+            scrollY: -window.scrollY
+        });
+        el.style.boxShadow = prevShadow;
+        return canvas;
+    }
+
+    async function downloadSingle(format) {
+        const btn = document.getElementById('dlPngBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '⏳ Rendering…'; btn.disabled = true;
+        try {
+            const invNum     = document.getElementById('invNum').value || 'RA';
+            const clientRaw  = document.getElementById('clientName').value || 'Client';
+            const clientSafe = clientRaw.trim().replace(/[^a-zA-Z0-9_\-]/g,'_');
+            const stampVal   = document.getElementById('advanceStatus').value;
+            const stampLabel = stampVal === 'paid' ? 'ADVANCE-RECEIVED' : 'ADVANCE-PENDING';
+
+            const canvas   = await captureCanvas();
+            const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
+            const quality  = format === 'jpg' ? 0.95 : 1.0;
+            const ext      = format === 'jpg' ? 'jpg' : 'png';
+            const filename = `Invoice-${invNum}-${clientSafe}-${stampLabel}.${ext}`;
+
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href     = canvas.toDataURL(mimeType, quality);
+            link.click();
+        } catch (e) { console.error(e); alert('Could not render image. Try Print instead.'); }
+        finally { btn.innerHTML = orig; btn.disabled = false; }
+    }
+
+    // ✅ FIX 3 — DOWNLOAD BOTH VERSIONS (pending + paid) in one click
+    async function downloadBothVersions() {
+        const btn  = document.getElementById('dlBothBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '⏳ Rendering both versions…'; btn.disabled = true;
+
+        const statusEl  = document.getElementById('advanceStatus');
+        const savedVal  = statusEl.value;
+        const invNum     = document.getElementById('invNum').value || 'RA';
+        const clientRaw  = document.getElementById('clientName').value || 'Client';
+        const clientSafe = clientRaw.trim().replace(/[^a-zA-Z0-9_\-]/g,'_');
+
+        async function downloadVersion(statusValue, labelSuffix) {
+            statusEl.value = statusValue;
+            updateInvoice();
+            await new Promise(r => setTimeout(r, 350)); // let DOM repaint
+            const canvas   = await captureCanvas();
+            const filename = `Invoice-${invNum}-${clientSafe}-${labelSuffix}.png`;
+            const link     = document.createElement('a');
+            link.download  = filename;
+            link.href      = canvas.toDataURL('image/png', 1.0);
+            link.click();
+            await new Promise(r => setTimeout(r, 600)); // browser needs gap between downloads
+        }
+
+        try {
+            await downloadVersion('unpaid', 'ADVANCE-PENDING');
+            await downloadVersion('paid',   'ADVANCE-RECEIVED');
+        } catch (e) {
+            console.error(e);
+            alert('Could not generate images. Try individual downloads instead.');
+        } finally {
+            // restore original state
+            statusEl.value = savedVal;
+            updateInvoice();
+            btn.innerHTML = orig;
+            btn.disabled  = false;
+        }
+    }
+
+    // ── BACKEND INTEGRATION ──────────────────────────────
+    const API_URL = 'http://localhost:3000/api';
+
+    function showStatus(msg, isErr=false) {
+        const el = document.getElementById('statusMessage');
+        el.style.display  = 'block';
+        el.style.background = isErr ? '#fee' : '#efe';
+        el.style.color      = isErr ? '#c33' : '#383';
+        el.style.border     = `1px solid ${isErr ? '#c33' : '#6a6'}`;
+        el.innerHTML = msg;
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    async function saveInvoice() {
+        const clientName = document.getElementById('clientName').value;
+        if (!clientName) { showStatus('❌ Please enter client name', true); return; }
+        const sendEmail   = document.getElementById('sendEmail').checked;
+        const clientEmail = document.getElementById('clientEmail').value;
+        if (sendEmail && !clientEmail) { showStatus('❌ Please enter client email to send invoice', true); return; }
+        showStatus('⏳ Saving invoice…');
+        try {
+            const r = await fetch(`${API_URL}/invoice/save-all`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    invoiceNumber: document.getElementById('invNum').value,
+                    invoiceDate:   document.getElementById('invDate').value,
+                    clientName, clientEmail,
+                    clientPhone:   document.getElementById('clientPhone').value,
+                    clientAddress: document.getElementById('clientAddress').value,
+                    eventDate:     document.getElementById('eventDate').value,
+                    slotTime:      document.getElementById('slotTime').value,
+                    eventVenue:    document.getElementById('eventVenue').value,
+                    services,
+                    saveToSheets:        document.getElementById('saveToSheets').checked,
+                    createCalendarEvent: document.getElementById('createCalendarEvent').checked,
+                    sendEmail,
+                    invoiceHTML: document.getElementById('invoiceEl').outerHTML
+                })
+            });
+            const result = await r.json();
+            if (result.success) {
+                let msg = '✅ Saved!<br>';
+                if (result.results?.sheets?.success)   msg += '📊 Google Sheets<br>';
+                if (result.results?.calendar?.success) msg += '📅 Calendar event<br>';
+                if (result.results?.email?.success)    msg += '📧 Email sent<br>';
+                showStatus(msg);
+            } else { showStatus(`❌ ${result.message}`, true); }
+        } catch (e) { showStatus(`❌ Cannot connect to server at ${API_URL}`, true); }
+    }
+</script>
+</body>
+</html>
